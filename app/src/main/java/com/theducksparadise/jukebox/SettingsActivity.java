@@ -74,8 +74,14 @@ public class SettingsActivity extends PreferenceActivity {
         PreferenceScreen preferenceScreen = (PreferenceScreen)findPreference("file_picker");
 
         preferenceScreen.getIntent().putExtra(DirectoryPicker.ONLY_DIRS, true);
-        preferenceScreen.getIntent().putExtra(DirectoryPicker.START_DIR, getRealExternalPath());
 
+        preferenceScreen.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                startActivityForResult(preference.getIntent(), DirectoryPicker.PICK_DIRECTORY);
+                return true;
+            }
+        });
         /*
         // Add 'notifications' preferences, and a corresponding header.
         PreferenceCategory fakeHeader = new PreferenceCategory(this);
@@ -278,50 +284,5 @@ public class SettingsActivity extends PreferenceActivity {
             String path = (String) extras.get(DirectoryPicker.CHOSEN_DIRECTORY);
             // do stuff with path
         }
-    }
-
-    private File getRealExternalPath() {
-        String path = null;
-        File file = new File("/system/etc/vold.fstab");
-        FileReader fr = null;
-        BufferedReader br = null;
-
-        try {
-            fr = new FileReader(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            if (fr != null) {
-                br = new BufferedReader(fr);
-                String s = br.readLine();
-                while (s != null) {
-                    if (s.startsWith("dev_mount")) {
-                        String[] tokens = s.split("\\s");
-                        path = tokens[2]; //mount_point
-                        if (!Environment.getExternalStorageDirectory().getAbsolutePath().equals(path)) {
-                            break;
-                        }
-                    }
-                    s = br.readLine();
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (fr != null) {
-                    fr.close();
-                }
-                if (br != null) {
-                    br.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return path == null ? Environment.getExternalStorageDirectory() : new File(path);
     }
 }
