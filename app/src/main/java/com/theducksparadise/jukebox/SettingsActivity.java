@@ -9,7 +9,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -19,12 +18,6 @@ import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
 
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -282,7 +275,7 @@ public class SettingsActivity extends PreferenceActivity {
         if(requestCode == DirectoryPicker.PICK_DIRECTORY && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             String path = (String) extras.get(DirectoryPicker.CHOSEN_DIRECTORY);
-            // do stuff with path
+            // READ FILES and stuff?
         }
     }
 }
