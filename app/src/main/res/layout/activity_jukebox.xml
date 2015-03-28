@@ -1,0 +1,79 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:background="#000000" tools:context=".Jukebox"
+    android:id="@+id/fullscreen_content_controls">
+
+    <!-- The primary full-screen view. This can be replaced with whatever view
+         is needed to present your content, e.g. VideoView, SurfaceView,
+         TextureView, etc. -->
+
+    <!-- This FrameLayout insets its children based on system windows using
+         android:fitsSystemWindows. -->
+
+    <ImageButton
+        android:layout_width="87dp"
+        android:layout_height="108dp"
+        android:id="@+id/playButton"
+        android:layout_gravity="left|bottom"
+        android:contentDescription="Play Button" />
+
+    <ImageButton
+        android:layout_width="87dp"
+        android:layout_height="108dp"
+        android:id="@+id/pauseButton"
+        android:layout_gravity="center_horizontal|bottom"
+        android:contentDescription="Pause Button" />
+
+    <ImageButton
+        android:layout_width="87dp"
+        android:layout_height="108dp"
+        android:id="@+id/libraryButton"
+        android:layout_gravity="right|bottom"
+        android:contentDescription="Play Button" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="251dp"
+        android:layout_gravity="center_horizontal|top"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:id="@+id/titleText"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0.33"
+            android:textColor="#ffff0000"
+            android:gravity="center_vertical" />
+
+        <TextView
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:text="Artist"
+            android:id="@+id/artistText"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0.33"
+            android:textColor="#ffff0000"
+            android:gravity="center_vertical" />
+
+        <TextView
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:text="Album"
+            android:id="@+id/albumText"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0.33"
+            android:textColor="#ffff0000"
+            android:gravity="center_vertical" />
+
+    </LinearLayout>
+
+    <SeekBar
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/seekBar"
+        android:layout_gravity="center" />
+
+</FrameLayout>

@@ -1,0 +1,14 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceScreen
+        android:key="file_picker"
+        android:summary="Choose a the base folder for your music"
+        android:title="Choose music folder location">
+
+        <intent
+            android:action="your.action.string"
+        />
+
+    </PreferenceScreen>
+
+</PreferenceScreen>
