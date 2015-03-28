@@ -6,6 +6,7 @@ public class Song {
     int sequence;
     Album album;
     String name;
+    String fileName;
 
     public int getId() {
         return id;
@@ -37,5 +38,13 @@ public class Song {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }

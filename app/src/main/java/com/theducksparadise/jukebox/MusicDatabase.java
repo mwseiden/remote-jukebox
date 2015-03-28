@@ -31,6 +31,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                     "id INTEGER PRIMARY KEY, " +
                     "album_id INTEGER, " +
                     "name TEXT, " +
+                    "file_name TEXT, " +
                     "sequence INTEGER, " +
                     "FOREIGN KEY(album_id) REFERENCES " + ALBUM_TABLE_NAME + "(id));";
 
