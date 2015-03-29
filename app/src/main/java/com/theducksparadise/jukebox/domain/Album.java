@@ -1,14 +1,19 @@
 package com.theducksparadise.jukebox.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Album {
 
-    int id;
-    Artist artist;
-    String name;
+    private int id;
+    private Artist artist;
+    private String name;
 
-    List<Song> songs;
+    private List<Song> songs;
+
+    public Album() {
+        songs = new ArrayList<Song>();
+    }
 
     public int getId() {
         return id;
@@ -49,11 +54,11 @@ public class Album {
 
         Album album = (Album) o;
 
-        return id == album.id;
+        return name.equals(album.name) && album.artist.getName().equals(artist.getName());
     }
 
     @Override
     public int hashCode() {
-        return id;
+        return name.hashCode();
     }
 }

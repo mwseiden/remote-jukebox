@@ -4,14 +4,24 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.media.MediaMetadataRetriever;
 
 import com.theducksparadise.jukebox.domain.Album;
 import com.theducksparadise.jukebox.domain.Artist;
 import com.theducksparadise.jukebox.domain.Song;
 
+import org.cmc.music.metadata.IMusicMetadata;
+import org.cmc.music.metadata.MusicMetadataSet;
+import org.cmc.music.myid3.MyID3;
+
 import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MusicDatabase extends SQLiteOpenHelper {
 
@@ -46,7 +56,9 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
     private List<Artist> artists;
 
-    private static MusicDatabase instance;
+    private Map<String, Artist> artistIndex;
+
+    private static volatile MusicDatabase instance;
 
     public static MusicDatabase getInstance(Context context) {
         if (instance == null) {
@@ -81,13 +93,18 @@ public class MusicDatabase extends SQLiteOpenHelper {
         return artists;
     }
 
+    public Artist getArtist(String name) {
+        return artistIndex.get(name);
+    }
+
     public void synchronizeWithFileSystem(String path) {
-        removeMissingFiles();
-        findAllSongFiles(path);
+        clearDatabase();
+        rebuildDatabase(path);
     }
 
     private void reloadDatabase() {
         artists = new ArrayList<Artist>();
+        artistIndex = new HashMap<String, Artist>();
 
         Cursor cursor = getReadableDatabase().rawQuery(
                 "SELECT id, name FROM " + ARTIST_TABLE_NAME + " ORDER BY name",
@@ -102,6 +119,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 artist.setName(cursor.getString(1));
 
                 artists.add(artist);
+                artistIndex.put(artist.getName(), artist);
             } while (cursor.moveToNext());
         }
 
@@ -198,10 +216,162 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
         for (Artist artist: emptyArtists) {
             artists.remove(artist);
+            artistIndex.remove(artist.getName());
         }
     }
 
     private List<File> findAllSongFiles(String path) {
-        return null;
+        File root = new File(path);
+
+        if (!root.exists()) return null;
+
+        List<File> files = new ArrayList<File>();
+
+        addFilesToList(root, files);
+
+        return files;
+    }
+
+    private void addFilesToList(File root, List<File> files) {
+        files.addAll(Arrays.asList(root.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return !pathname.isDirectory() && pathname.getName().toLowerCase().endsWith(".mp3");
+            }
+        })));
+
+        File[] subdirectories = root.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isDirectory();
+            }
+        });
+
+        for (File subdirectory: subdirectories) {
+            addFilesToList(subdirectory, files);
+        }
+    }
+
+    private void clearDatabase() {
+        getWritableDatabase().execSQL("DELETE FROM " + SONG_TABLE_NAME + ";");
+        getWritableDatabase().execSQL("DELETE FROM " + ALBUM_TABLE_NAME + ";");
+        getWritableDatabase().execSQL("DELETE FROM " + ARTIST_TABLE_NAME + ";");
+
+        artists.clear();
+        artistIndex.clear();
+    }
+
+    private void rebuildDatabase(String path) {
+        List<File> files = findAllSongFiles(path);
+
+        //MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+
+        for (File file : files) {
+            /*
+            mmr.setDataSource(file.getAbsolutePath());
+            String artistName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+            String albumName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+            String songName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+
+            Integer sequence;
+            try {
+                sequence = Integer.parseInt(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER));
+            } catch (NumberFormatException e) {
+                sequence = 0;
+            }
+            */
+
+            try {
+                MusicMetadataSet metadataSet = new MyID3().read(file);
+                IMusicMetadata metadata = metadataSet.getSimplified();
+                String artistName = metadata.getArtist();
+                String albumName = metadata.getAlbum();
+                String songName = metadata.getSongTitle();
+
+                if (artistName == null || artistName.equals("")) artistName = "Unknown Artist";
+                if (albumName == null || albumName.equals("")) albumName = "Unknown Album";
+
+                Artist artist = getArtist(artistName);
+
+                if (artist == null) {
+                    artist = new Artist();
+                    artist.setName(artistName);
+                    artists.add(artist);
+                    artistIndex.put(artistName, artist);
+                }
+
+                Album album = artist.getAlbum(albumName);
+
+                if (album == null) {
+                    album = new Album();
+                    album.setName(albumName);
+                    album.setArtist(artist);
+                    artist.getAlbums().add(album);
+                }
+
+                int sequence = metadata.getTrackNumber() == null ? album.getSongs().size() + 1 : metadata.getTrackNumber().intValue();
+                if (songName == null || songName.equals("")) songName = "Track " + sequence;
+
+                Song song = new Song();
+                song.setName(songName);
+                song.setFileName(file.getAbsolutePath());
+                song.setSequence(sequence);
+                song.setAlbum(album);
+
+            } catch (IOException e) {
+                // Well that sucks. Ignore it.
+            }
+        }
+
+        for (Artist artist : artists) {
+            saveArtist(artist);
+
+            for (Album album : artist.getAlbums()) {
+                saveAlbum(album);
+
+                for (Song song : album.getSongs()) {
+                    saveSong(song);
+                }
+            }
+        }
+    }
+
+    private void saveArtist(Artist artist) {
+        getWritableDatabase().execSQL(
+                "INSERT INTO " + ARTIST_TABLE_NAME + " (name) VALUES (?);",
+                new Object[] { artist.getName() }
+        );
+
+        Cursor cursor = getWritableDatabase().rawQuery("SELECT last_insert_rowid() FROM " + ARTIST_TABLE_NAME, null);
+
+        if (cursor.moveToFirst()) artist.setId(cursor.getInt(0));
+
+        cursor.close();
+    }
+
+    private void saveAlbum(Album album) {
+        getWritableDatabase().execSQL(
+                "INSERT INTO " + ALBUM_TABLE_NAME + " (name, artist_id) VALUES (?, ?);",
+                new Object[] { album.getName(), album.getArtist().getId() }
+        );
+
+        Cursor cursor = getWritableDatabase().rawQuery("SELECT last_insert_rowid() FROM " + ALBUM_TABLE_NAME + ";", null);
+
+        if (cursor.moveToFirst()) album.setId(cursor.getInt(0));
+
+        cursor.close();
+    }
+
+    private void saveSong(Song song) {
+        getWritableDatabase().execSQL(
+                "INSERT INTO " + SONG_TABLE_NAME + " (name, album_id, file_name, sequence) VALUES (?, ?, ?, ?);",
+                new Object[] { song.getName(), song.getAlbum().getId(), song.getFileName(), song.getSequence() }
+        );
+
+        Cursor cursor = getWritableDatabase().rawQuery("SELECT last_insert_rowid() FROM " + SONG_TABLE_NAME + ";", null);
+
+        if (cursor.moveToFirst()) song.setId(cursor.getInt(0));
+
+        cursor.close();
     }
 }

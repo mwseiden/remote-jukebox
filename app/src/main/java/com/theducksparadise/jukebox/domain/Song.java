@@ -2,11 +2,11 @@ package com.theducksparadise.jukebox.domain;
 
 public class Song {
 
-    int id;
-    int sequence;
-    Album album;
-    String name;
-    String fileName;
+    private int id;
+    private int sequence;
+    private Album album;
+    private String name;
+    private String fileName;
 
     public int getId() {
         return id;
@@ -55,12 +55,19 @@ public class Song {
 
         Song song = (Song) o;
 
-        return id == song.id;
+        return sequence == song.sequence &&
+                fileName.equals(song.fileName) &&
+                name.equals(song.name) &&
+                album.getName().equals(song.getAlbum().getName()) &&
+                album.getArtist().getName().equals(song.getAlbum().getArtist().getName());
+
     }
 
     @Override
     public int hashCode() {
-        return id;
+        int result = sequence;
+        result = 31 * result + name.hashCode();
+        result = 31 * result + fileName.hashCode();
+        return result;
     }
-
 }
