@@ -46,7 +46,21 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
     private List<Artist> artists;
 
-    MusicDatabase(Context context) {
+    private static MusicDatabase instance;
+
+    public static MusicDatabase getInstance(Context context) {
+        if (instance == null) {
+            synchronized (MusicDatabase.class) {
+                if (instance == null) {
+                    instance = new MusicDatabase(context);
+                }
+            }
+        }
+
+        return instance;
+    }
+
+    private MusicDatabase(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         reloadDatabase();
     }

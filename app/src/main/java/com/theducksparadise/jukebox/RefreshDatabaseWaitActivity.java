@@ -4,11 +4,14 @@ import com.theducksparadise.jukebox.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.io.File;
 
 
 /**
@@ -17,7 +20,9 @@ import android.view.View;
  *
  * @see SystemUiHider
  */
-public class WaitActivity extends Activity {
+public class RefreshDatabaseWaitActivity extends Activity {
+    public static final String PATH = "asyncTask";
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -52,6 +57,21 @@ public class WaitActivity extends Activity {
 
         setContentView(R.layout.activity_wait);
 
+        Bundle extras = getIntent().getExtras();
+
+        if (extras != null) {
+
+            RefreshDatabaseAsync task = new RefreshDatabaseAsync();
+            task.setActivity(this);
+            task.setPath(extras.getString(PATH));
+            task.setContext(getApplicationContext());
+
+            task.execute();
+        } else {
+            finish();
+        }
+
+        /*
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
         final View contentView = findViewById(R.id.fullscreen_content);
 
@@ -113,8 +133,10 @@ public class WaitActivity extends Activity {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        */
     }
 
+    /*
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
@@ -124,6 +146,7 @@ public class WaitActivity extends Activity {
         // are available.
         delayedHide(100);
     }
+    */
 
 
     /**

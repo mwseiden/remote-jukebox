@@ -32,7 +32,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".WaitActivity"
+            android:name=".RefreshDatabaseWaitActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_wait"
             android:theme="@style/FullscreenTheme" >

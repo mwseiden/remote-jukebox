@@ -84,8 +84,9 @@ public class SettingsActivity extends PreferenceActivity {
         refreshDatabaseControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                // load from file system
-                return false;
+                Intent intent = new Intent(getApplicationContext(), RefreshDatabaseWaitActivity.class);
+                startActivity(intent);
+                return true;
             }
         });
 
