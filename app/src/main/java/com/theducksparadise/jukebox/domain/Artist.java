@@ -32,4 +32,19 @@ public class Artist {
     public void setAlbums(List<Album> albums) {
         this.albums = albums;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Artist artist = (Artist) o;
+
+        return id == artist.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
 }

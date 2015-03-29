@@ -41,4 +41,19 @@ public class Album {
     public void setSongs(List<Song> songs) {
         this.songs = songs;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Album album = (Album) o;
+
+        return id == album.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
 }

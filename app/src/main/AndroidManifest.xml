@@ -3,7 +3,7 @@
     package="com.theducksparadise.jukebox" >
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -24,11 +24,18 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" >
         </activity>
-        <activity android:name=".DirectoryPicker">
+        <activity android:name=".DirectoryPicker" >
             <intent-filter>
-                <action android:name="your.action.string"/>
+                <action android:name="your.action.string" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".WaitActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_wait"
+            android:theme="@style/FullscreenTheme" >
         </activity>
     </application>
 

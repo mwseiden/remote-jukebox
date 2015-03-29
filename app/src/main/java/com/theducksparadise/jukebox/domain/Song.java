@@ -47,4 +47,20 @@ public class Song {
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Song song = (Song) o;
+
+        return id == song.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
 }
