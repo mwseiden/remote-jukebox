@@ -2,13 +2,25 @@
 
     <PreferenceScreen
         android:key="file_picker"
-        android:summary="Choose a the base folder for your music"
-        android:title="Choose music folder location">
+        android:summary="Nothing Selected"
+        android:title="The Base Folder For Your Music">
 
         <intent
             android:action="your.action.string"
         />
 
     </PreferenceScreen>
+
+    <Preference
+        android:key="refresh_db"
+        android:summary="Synchronizes the database with the file system"
+        android:title="Refresh database"
+    />
+
+    <Preference
+        android:key="clear_db"
+        android:summary="Wipes out the entire music database"
+        android:title="Clear Database"
+        />
 
 </PreferenceScreen>

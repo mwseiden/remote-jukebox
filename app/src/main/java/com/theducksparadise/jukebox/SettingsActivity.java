@@ -3,20 +3,15 @@ package com.theducksparadise.jukebox;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.preference.RingtonePreference;
-import android.text.TextUtils;
 
 import java.util.List;
 
@@ -40,6 +35,10 @@ public class SettingsActivity extends PreferenceActivity {
      */
     private static final boolean ALWAYS_SIMPLE_PREFS = false;
 
+    private PreferenceScreen filePickerControl;
+
+    private Preference refreshDatabaseControl;
+
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -54,9 +53,11 @@ public class SettingsActivity extends PreferenceActivity {
      * shown.
      */
     private void setupSimplePreferencesScreen() {
+        /*
         if (!isSimplePreferences(this)) {
             return;
         }
+        */
 
         // In the simplified UI, fragments are not used at all and we instead
         // use the older PreferenceActivity APIs.
@@ -64,17 +65,29 @@ public class SettingsActivity extends PreferenceActivity {
         // Add 'general' preferences.
         addPreferencesFromResource(R.xml.pref_general);
 
-        PreferenceScreen preferenceScreen = (PreferenceScreen)findPreference("file_picker");
+        filePickerControl = (PreferenceScreen)findPreference("file_picker");
 
-        preferenceScreen.getIntent().putExtra(DirectoryPicker.ONLY_DIRS, true);
+        filePickerControl.getIntent().putExtra(DirectoryPicker.ONLY_DIRS, true);
+        setDefaultDirectory(loadStringPreference(filePickerControl.getKey(), null));
 
-        preferenceScreen.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+        filePickerControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 startActivityForResult(preference.getIntent(), DirectoryPicker.PICK_DIRECTORY);
                 return true;
             }
         });
+
+        refreshDatabaseControl = findPreference("refresh_db");
+
+        refreshDatabaseControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                // load from file system
+                return false;
+            }
+        });
+
         /*
         // Add 'notifications' preferences, and a corresponding header.
         PreferenceCategory fakeHeader = new PreferenceCategory(this);
@@ -146,6 +159,7 @@ public class SettingsActivity extends PreferenceActivity {
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
+            /*
             String stringValue = value.toString();
 
             if (preference instanceof ListPreference) {
@@ -187,6 +201,7 @@ public class SettingsActivity extends PreferenceActivity {
                 // simple string representation.
                 preference.setSummary(stringValue);
             }
+            */
             return true;
         }
     };
@@ -272,10 +287,27 @@ public class SettingsActivity extends PreferenceActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == DirectoryPicker.PICK_DIRECTORY && resultCode == RESULT_OK) {
+        if (requestCode == DirectoryPicker.PICK_DIRECTORY && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
-            String path = (String) extras.get(DirectoryPicker.CHOSEN_DIRECTORY);
-            // READ FILES and stuff?
+            String path = (String)extras.get(DirectoryPicker.CHOSEN_DIRECTORY);
+            saveStringPreference(filePickerControl.getKey(), path);
+            setDefaultDirectory(path);
         }
+    }
+
+    private void saveStringPreference(String key, String value) {
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(key, value);
+        editor.apply(); // This was .commit() but Intellij thinks it's wrong
+    }
+
+    private String loadStringPreference(String key, String defaultValue) {
+        return getPreferences(Context.MODE_PRIVATE).getString(key, defaultValue);
+    }
+
+    private void setDefaultDirectory(String path) {
+        filePickerControl.getIntent().putExtra(DirectoryPicker.START_DIR, path);
+        filePickerControl.setSummary(path == null ? "Nothing Selected" : path);
     }
 }
