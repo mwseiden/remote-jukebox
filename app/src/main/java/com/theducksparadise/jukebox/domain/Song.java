@@ -70,4 +70,9 @@ public class Song {
         result = 31 * result + fileName.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

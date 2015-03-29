@@ -4,7 +4,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.media.MediaMetadataRetriever;
 
 import com.theducksparadise.jukebox.domain.Album;
 import com.theducksparadise.jukebox.domain.Artist;
@@ -97,9 +96,9 @@ public class MusicDatabase extends SQLiteOpenHelper {
         return artistIndex.get(name);
     }
 
-    public void synchronizeWithFileSystem(String path) {
-        clearDatabase();
-        rebuildDatabase(path);
+    public void synchronizeWithFileSystem(String path, AsyncProgress asyncProgress) {
+        clearDatabase(asyncProgress);
+        rebuildDatabase(path, asyncProgress);
     }
 
     private void reloadDatabase() {
@@ -252,36 +251,28 @@ public class MusicDatabase extends SQLiteOpenHelper {
         }
     }
 
-    private void clearDatabase() {
+    private void clearDatabase(AsyncProgress asyncProgress) {
+        asyncProgress.updateProgress("Clearing Songs");
         getWritableDatabase().execSQL("DELETE FROM " + SONG_TABLE_NAME + ";");
+
+        asyncProgress.updateProgress("Clearing Albums");
         getWritableDatabase().execSQL("DELETE FROM " + ALBUM_TABLE_NAME + ";");
+
+        asyncProgress.updateProgress("Clearing Artists");
         getWritableDatabase().execSQL("DELETE FROM " + ARTIST_TABLE_NAME + ";");
 
         artists.clear();
         artistIndex.clear();
     }
 
-    private void rebuildDatabase(String path) {
+    private void rebuildDatabase(String path, AsyncProgress asyncProgress) {
         List<File> files = findAllSongFiles(path);
 
-        //MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-
+        int i = 0;
         for (File file : files) {
-            /*
-            mmr.setDataSource(file.getAbsolutePath());
-            String artistName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-            String albumName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
-            String songName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-
-            Integer sequence;
             try {
-                sequence = Integer.parseInt(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER));
-            } catch (NumberFormatException e) {
-                sequence = 0;
-            }
-            */
-
-            try {
+                i++;
+                asyncProgress.updateProgress("Processing File " + i + " Of " + files.size());
                 MusicMetadataSet metadataSet = new MyID3().read(file);
                 IMusicMetadata metadata = metadataSet.getSimplified();
                 String artistName = metadata.getArtist();
@@ -318,12 +309,17 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 song.setSequence(sequence);
                 song.setAlbum(album);
 
-            } catch (IOException e) {
+            } catch (IOException | ArrayIndexOutOfBoundsException e) {
                 // Well that sucks. Ignore it.
             }
         }
 
+        i = 0;
         for (Artist artist : artists) {
+            i++;
+
+            asyncProgress.updateProgress("Saving Artist " + i + " Of " + artists.size());
+
             saveArtist(artist);
 
             for (Album album : artist.getAlbums()) {

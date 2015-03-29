@@ -1,14 +1,39 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:background="#0099cc"
+    android:layout_height="match_parent" android:background="#000000"
     tools:context="com.theducksparadise.jukebox.RefreshDatabaseWaitActivity">
 
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Doing Something"
-        android:id="@+id/doingSomethingText"
-        android:layout_gravity="center_horizontal|top" />
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal|top">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="248dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Doing Something"
+            android:id="@+id/doingSomethingText"
+            android:layout_gravity="center_horizontal|top"
+            android:textColor="#ffff0000"
+            android:gravity="center_vertical|center_horizontal" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:id="@+id/imageView"
+            android:layout_column="8"
+            android:src="@drawable/throbber" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="51dp"
+            android:text="Progress"
+            android:id="@+id/progressText"
+            android:layout_column="10"
+            android:gravity="center_vertical|center_horizontal"
+            android:textColor="#ffff0000" />
+
+    </TableLayout>
 </FrameLayout>

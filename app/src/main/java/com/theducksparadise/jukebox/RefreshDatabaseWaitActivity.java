@@ -4,12 +4,17 @@ import com.theducksparadise.jukebox.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.TextView;
 
 import java.io.File;
 
@@ -22,6 +27,7 @@ import java.io.File;
  */
 public class RefreshDatabaseWaitActivity extends Activity {
     public static final String PATH = "asyncTask";
+    public static final int UPDATE_MESSAGE = 412391220;
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -51,18 +57,29 @@ public class RefreshDatabaseWaitActivity extends Activity {
      */
     private SystemUiHider mSystemUiHider;
 
+    private static Handler handler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        handler = new ProgressHandler(this);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_wait);
+
+        setDoingSomethingText("Reloading Database");
+        setProgressText("...");
 
         Bundle extras = getIntent().getExtras();
 
         if (extras != null) {
-
             RefreshDatabaseAsync task = new RefreshDatabaseAsync();
             task.setActivity(this);
+            task.setHandler(handler);
             task.setPath(extras.getString(PATH));
             task.setContext(getApplicationContext());
 
@@ -179,5 +196,38 @@ public class RefreshDatabaseWaitActivity extends Activity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    private void setDoingSomethingText(String text) {
+        TextView myTextView = (TextView)findViewById(R.id.doingSomethingText);
+        myTextView.setText(text);
+        Typeface typeFace = Typeface.createFromAsset(getAssets(), "fonts/LCD.otf");
+        myTextView.setTextSize(40.0f);
+        myTextView.setTypeface(typeFace);
+    }
+
+    private void setProgressText(String text) {
+        TextView myTextView = (TextView)findViewById(R.id.progressText);
+        myTextView.setText(text);
+        Typeface typeFace = Typeface.createFromAsset(getAssets(), "fonts/LCD.otf");
+        myTextView.setTextSize(16.0f);
+        myTextView.setTypeface(typeFace);
+    }
+
+    private static class ProgressHandler extends Handler {
+        private RefreshDatabaseWaitActivity activity;
+
+        public ProgressHandler(RefreshDatabaseWaitActivity activity) {
+            this.activity = activity;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == UPDATE_MESSAGE){
+                activity.setProgressText(msg.obj.toString());
+            }
+            super.handleMessage(msg);
+        }
+
     }
 }

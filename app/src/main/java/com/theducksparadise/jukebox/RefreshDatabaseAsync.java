@@ -10,7 +10,12 @@ public class RefreshDatabaseAsync extends WaitActivityAsyncTask {
     protected Boolean doInBackground(Void... params) {
         if (path == null || context == null || getActivity() == null) return false;
 
-        MusicDatabase.getInstance(context).synchronizeWithFileSystem(path);
+        MusicDatabase.getInstance(context).synchronizeWithFileSystem(path, new AsyncProgress() {
+            @Override
+            public void updateProgress(String text) {
+                setProgressMessage(text);
+            }
+        });
 
         return true;
     }
