@@ -17,10 +17,6 @@ public abstract class WaitActivityAsyncTask extends AsyncTask<Void, Integer, Boo
         return activity;
     }
 
-    public Handler getHandler() {
-        return handler;
-    }
-
     public void setHandler(Handler handler) {
         this.handler = handler;
     }

@@ -219,19 +219,21 @@ public class MusicDatabase extends SQLiteOpenHelper {
         }
     }
 
-    private List<File> findAllSongFiles(String path) {
+    private List<File> findAllSongFiles(String path, AsyncProgress asyncProgress) {
         File root = new File(path);
 
         if (!root.exists()) return null;
 
         List<File> files = new ArrayList<File>();
 
-        addFilesToList(root, files);
+        addFilesToList(root, files, asyncProgress);
 
         return files;
     }
 
-    private void addFilesToList(File root, List<File> files) {
+    private void addFilesToList(File root, List<File> files, AsyncProgress asyncProgress) {
+        asyncProgress.updateProgress("Searching " + root.getAbsolutePath());
+
         files.addAll(Arrays.asList(root.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
@@ -247,7 +249,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
         });
 
         for (File subdirectory: subdirectories) {
-            addFilesToList(subdirectory, files);
+            addFilesToList(subdirectory, files, asyncProgress);
         }
     }
 
@@ -266,7 +268,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
     }
 
     private void rebuildDatabase(String path, AsyncProgress asyncProgress) {
-        List<File> files = findAllSongFiles(path);
+        List<File> files = findAllSongFiles(path, asyncProgress);
 
         int i = 0;
         for (File file : files) {
