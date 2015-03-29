@@ -85,6 +85,7 @@ public class SettingsActivity extends PreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Intent intent = new Intent(getApplicationContext(), RefreshDatabaseWaitActivity.class);
+                intent.putExtra(RefreshDatabaseWaitActivity.PATH, loadStringPreference(filePickerControl.getKey(), null));
                 startActivity(intent);
                 return true;
             }
