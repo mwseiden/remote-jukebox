@@ -1,6 +1,7 @@
 package com.theducksparadise.jukebox;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -8,7 +9,6 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -44,11 +44,13 @@ public class DirectoryPicker extends ListActivity {
     public static final String START_DIR = "startDir";
     public static final String ONLY_DIRS = "onlyDirs";
     public static final String SHOW_HIDDEN = "showHidden";
+    public static final String ALLOW_BACKTRACK = "allowBacktrack";
     public static final String CHOSEN_DIRECTORY = "chosenDir";
     public static final int PICK_DIRECTORY = 43522432;
     private File dir;
     private boolean showHidden = false;
     private boolean onlyDirs = true;
+    private boolean showBacktrack = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,6 +61,7 @@ public class DirectoryPicker extends ListActivity {
             String preferredStartDir = extras.getString(START_DIR);
             showHidden = extras.getBoolean(SHOW_HIDDEN, false);
             onlyDirs = extras.getBoolean(ONLY_DIRS, true);
+            showBacktrack = extras.getBoolean(ALLOW_BACKTRACK, false);
             if (preferredStartDir != null) {
                 File startDir = new File(preferredStartDir);
                 if(startDir.isDirectory()) {
@@ -91,20 +94,26 @@ public class DirectoryPicker extends ListActivity {
             return;
         }
 
-        final ArrayList<File> files = filter(dir.listFiles(), onlyDirs, showHidden);
+        final ArrayList<File> files = filter(dir.listFiles(), onlyDirs, showHidden, showBacktrack);
         String[] names = names(files);
         setListAdapter(new ArrayAdapter<String>(this, R.layout.list_item, names));
 
 
         lv.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(!files.get(position).isDirectory())
+                if (!files.get(position).isDirectory())
                     return;
-                String path = files.get(position).getAbsolutePath();
+                String path;
+                try {
+                    path = files.get(position).getCanonicalPath();
+                } catch (IOException e) {
+                    path = files.get(position).getAbsolutePath();
+                }
                 Intent intent = new Intent(DirectoryPicker.this, DirectoryPicker.class);
                 intent.putExtra(DirectoryPicker.START_DIR, path);
                 intent.putExtra(DirectoryPicker.SHOW_HIDDEN, showHidden);
                 intent.putExtra(DirectoryPicker.ONLY_DIRS, onlyDirs);
+                intent.putExtra(DirectoryPicker.ALLOW_BACKTRACK, showBacktrack);
                 startActivityForResult(intent, PICK_DIRECTORY);
             }
         });
@@ -112,9 +121,9 @@ public class DirectoryPicker extends ListActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == PICK_DIRECTORY && resultCode == RESULT_OK) {
+        if (requestCode == PICK_DIRECTORY && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
-            String path = (String) extras.get(DirectoryPicker.CHOSEN_DIRECTORY);
+            String path = (String)extras.get(DirectoryPicker.CHOSEN_DIRECTORY);
             returnDir(path);
         }
     }
@@ -126,9 +135,12 @@ public class DirectoryPicker extends ListActivity {
         finish();
     }
 
-    public ArrayList<File> filter(File[] file_list, boolean onlyDirs, boolean showHidden) {
+    public ArrayList<File> filter(File[] file_list, boolean onlyDirs, boolean showHidden, boolean showBacktrack) {
         ArrayList<File> files = new ArrayList<File>();
-        for(File file: file_list) {
+
+        if (showBacktrack) files.add(new File(".."));
+
+        for (File file: file_list) {
             if(onlyDirs && !file.isDirectory())
                 continue;
             if(!showHidden && file.isHidden())
@@ -141,11 +153,14 @@ public class DirectoryPicker extends ListActivity {
 
     public String[] names(ArrayList<File> files) {
         String[] names = new String[files.size()];
+
         int i = 0;
-        for(File file: files) {
+
+        for (File file: files) {
             names[i] = file.getName();
             i++;
         }
+
         return names;
     }
 }

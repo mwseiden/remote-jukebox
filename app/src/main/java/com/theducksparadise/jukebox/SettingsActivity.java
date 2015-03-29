@@ -68,6 +68,7 @@ public class SettingsActivity extends PreferenceActivity {
         filePickerControl = (PreferenceScreen)findPreference("file_picker");
 
         filePickerControl.getIntent().putExtra(DirectoryPicker.ONLY_DIRS, true);
+        filePickerControl.getIntent().putExtra(DirectoryPicker.ALLOW_BACKTRACK, true);
         setDefaultDirectory(loadStringPreference(filePickerControl.getKey(), null));
 
         filePickerControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
