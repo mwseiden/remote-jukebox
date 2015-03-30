@@ -201,7 +201,7 @@ public class MusicListActivity extends Activity {
             } else if (rootItem instanceof Artist) {
                 return ((Artist)rootItem).getAlbums().size();
             } else if (rootItem instanceof Album) {
-                return ((Album)rootItem).getSongsForQueue().size();
+                return ((Album)rootItem).getSongs().size();
             }
 
             return 0;
@@ -214,7 +214,7 @@ public class MusicListActivity extends Activity {
             } else if (rootItem instanceof Artist) {
                 return ((Artist)rootItem).getAlbums().get(position);
             } else if (rootItem instanceof Album) {
-                return ((Album)rootItem).getSongsForQueue().get(position);
+                return ((Album)rootItem).getSongs().get(position);
             }
 
             return null;
@@ -227,7 +227,7 @@ public class MusicListActivity extends Activity {
             } else if (rootItem instanceof Artist) {
                 return ((Artist)rootItem).getAlbums().get(position).getId();
             } else if (rootItem instanceof Album) {
-                return ((Album)rootItem).getSongsForQueue().get(position).getId();
+                return ((Album)rootItem).getSongs().get(position).getId();
             }
 
             return -1;
