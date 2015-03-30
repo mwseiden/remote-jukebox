@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 
 
 /**
@@ -193,6 +194,7 @@ public class MusicListActivity extends Activity {
     private class MusicAdapter extends BaseAdapter {
         private NamedItem rootItem = null;
         private Set<NamedItem> selected = new HashSet<NamedItem>();
+        private Stack<Integer> positions = new Stack<Integer>();
 
         @Override
         public int getCount() {
@@ -234,7 +236,7 @@ public class MusicListActivity extends Activity {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             final NamedItem namedItem = (NamedItem)getItem(position);
 
             View rowView = getLayoutInflater().inflate(R.layout.checkbox_item, parent, false);
@@ -248,6 +250,7 @@ public class MusicListActivity extends Activity {
             if (!(namedItem instanceof Song)) textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    positions.push(position);
                     setRootItem(namedItem);
                 }
             });
@@ -284,6 +287,9 @@ public class MusicListActivity extends Activity {
             }
 
             notifyDataSetChanged();
+
+            ListView listView = (ListView)findViewById(R.id.musicListView);
+            listView.setSelection(positions.pop());
 
             return true;
         }
