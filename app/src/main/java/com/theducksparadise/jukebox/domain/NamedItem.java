@@ -1,6 +1,8 @@
 package com.theducksparadise.jukebox.domain;
 
-public class NamedItem {
+import java.util.Collection;
+
+public abstract class NamedItem {
 
     private String name;
 
@@ -11,6 +13,8 @@ public class NamedItem {
     public void setName(String name) {
         this.name = name;
     }
+
+    public abstract Collection<NamedItem> getSongsForQueue();
 
     @Override
     public String toString() {

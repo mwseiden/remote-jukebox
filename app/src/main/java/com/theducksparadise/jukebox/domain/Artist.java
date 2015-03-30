@@ -1,6 +1,7 @@
 package com.theducksparadise.jukebox.domain;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Artist extends NamedItem {
@@ -50,5 +51,16 @@ public class Artist extends NamedItem {
     @Override
     public int hashCode() {
         return getName().hashCode();
+    }
+
+    @Override
+    public Collection<NamedItem> getSongsForQueue() {
+        Collection<NamedItem> items = new ArrayList<NamedItem>();
+
+        for (Album album: getAlbums()) {
+            items.addAll(album.getSongsForQueue());
+        }
+
+        return items;
     }
 }

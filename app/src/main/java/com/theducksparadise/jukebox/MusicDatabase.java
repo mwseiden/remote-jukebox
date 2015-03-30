@@ -176,7 +176,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 song.setFileName(cursor.getString(3));
                 song.setAlbum(album);
 
-                album.getSongs().add(song);
+                album.getSongsForQueue().add(song);
             } while (cursor.moveToNext());
         }
 
@@ -200,10 +200,10 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 }
 
                 for (Song song: removedSongList) {
-                    album.getSongs().remove(song);
+                    album.getSongsForQueue().remove(song);
                 }
 
-                if (album.getSongs().size() == 0) emptyAlbums.add(album);
+                if (album.getSongsForQueue().size() == 0) emptyAlbums.add(album);
             }
 
             for (Album album: emptyAlbums) {
@@ -302,7 +302,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                     artist.getAlbums().add(album);
                 }
 
-                int sequence = metadata.getTrackNumber() == null ? album.getSongs().size() + 1 : metadata.getTrackNumber().intValue();
+                int sequence = metadata.getTrackNumber() == null ? album.getSongsForQueue().size() + 1 : metadata.getTrackNumber().intValue();
                 if (songName == null || songName.equals("")) songName = "Track " + sequence;
 
                 Song song = new Song();
@@ -310,7 +310,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 song.setFileName(file.getAbsolutePath());
                 song.setSequence(sequence);
                 song.setAlbum(album);
-                album.getSongs().add(song);
+                album.getSongsForQueue().add(song);
 
             } catch (IOException | ArrayIndexOutOfBoundsException e) {
                 // Well that sucks. Ignore it.

@@ -1,5 +1,8 @@
 package com.theducksparadise.jukebox.domain;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public class Song extends NamedItem {
 
     private int id;
@@ -61,5 +64,12 @@ public class Song extends NamedItem {
         result = 31 * result + getName().hashCode();
         result = 31 * result + fileName.hashCode();
         return result;
+    }
+
+    @Override
+    public Collection<NamedItem> getSongsForQueue() {
+        Collection<NamedItem> items = new ArrayList<NamedItem>();
+        items.add(this);
+        return items;
     }
 }
