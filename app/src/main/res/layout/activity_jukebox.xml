@@ -20,7 +20,7 @@
     <ImageButton
         android:layout_width="87dp"
         android:layout_height="108dp"
-        android:id="@+id/pauseButton"
+        android:id="@+id/nextButton"
         android:layout_gravity="center_horizontal|bottom"
         android:contentDescription="Pause Button" />
 

@@ -73,8 +73,23 @@ public class Jukebox extends Activity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), MusicListActivity.class);
-                //intent.putExtra(RefreshDatabaseWaitActivity.PATH, loadStringPreference(filePickerControl.getKey(), null));
                 startActivity(intent);
+            }
+        });
+
+        ImageButton nextButton = (ImageButton)findViewById(R.id.nextButton);
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JukeboxMedia.getInstance().skip();
+            }
+        });
+
+        ImageButton playButton = (ImageButton)findViewById(R.id.playButton);
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JukeboxMedia.getInstance().togglePlay();
             }
         });
 
