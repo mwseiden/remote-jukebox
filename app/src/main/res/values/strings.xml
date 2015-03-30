@@ -5,4 +5,6 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
 
     <string name="title_activity_wait">WaitActivity</string>
+
+    <string name="title_activity_music_list">MusicListActivity</string>
 </resources>

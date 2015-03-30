@@ -1,11 +1,10 @@
 package com.theducksparadise.jukebox.domain;
 
-public class Song {
+public class Song extends NamedItem {
 
     private int id;
     private int sequence;
     private Album album;
-    private String name;
     private String fileName;
 
     public int getId() {
@@ -32,13 +31,6 @@ public class Song {
         this.album = album;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getFileName() {
         return fileName;
@@ -57,7 +49,7 @@ public class Song {
 
         return sequence == song.sequence &&
                 fileName.equals(song.fileName) &&
-                name.equals(song.name) &&
+                getName().equals(song.getName()) &&
                 album.getName().equals(song.getAlbum().getName()) &&
                 album.getArtist().getName().equals(song.getAlbum().getArtist().getName());
 
@@ -66,13 +58,8 @@ public class Song {
     @Override
     public int hashCode() {
         int result = sequence;
-        result = 31 * result + name.hashCode();
+        result = 31 * result + getName().hashCode();
         result = 31 * result + fileName.hashCode();
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return name;
     }
 }

@@ -3,10 +3,9 @@ package com.theducksparadise.jukebox.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Artist {
+public class Artist extends NamedItem {
 
     private int id;
-    private String name;
 
     private List<Album> albums;
 
@@ -20,14 +19,6 @@ public class Artist {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public List<Album> getAlbums() {
@@ -53,16 +44,11 @@ public class Artist {
 
         Artist artist = (Artist) o;
 
-        return name.equals(artist.name);
+        return getName().equals(artist.getName());
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return name;
+        return getName().hashCode();
     }
 }

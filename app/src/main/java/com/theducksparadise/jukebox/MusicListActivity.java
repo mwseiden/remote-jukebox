@@ -1,22 +1,27 @@
 package com.theducksparadise.jukebox;
 
+import com.theducksparadise.jukebox.domain.Album;
+import com.theducksparadise.jukebox.domain.Artist;
+import com.theducksparadise.jukebox.domain.NamedItem;
+import com.theducksparadise.jukebox.domain.Song;
 import com.theducksparadise.jukebox.util.SystemUiHider;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageButton;
+import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -25,7 +30,7 @@ import android.widget.TextView;
  *
  * @see SystemUiHider
  */
-public class Jukebox extends Activity {
+public class MusicListActivity extends Activity {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -62,30 +67,20 @@ public class Jukebox extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        setContentView(R.layout.activity_jukebox);
+        setContentView(R.layout.activity_music_list);
 
-        setMultiSegmentFont(R.id.artistText);
-        setMultiSegmentFont(R.id.albumText);
-        setMultiSegmentFont(R.id.titleText);
+        ListView listView = (ListView)findViewById(R.id.musicListView);
 
-        ImageButton libraryButton = (ImageButton)findViewById(R.id.libraryButton);
-        libraryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), MusicListActivity.class);
-                //intent.putExtra(RefreshDatabaseWaitActivity.PATH, loadStringPreference(filePickerControl.getKey(), null));
-                startActivity(intent);
-            }
-        });
+        listView.setAdapter(new MusicAdapter());
 
-        //final View controlsView = findViewById(R.id.fullscreen_content_controls);
-        //final View contentView = findViewById(R.id.fullscreen_content_controls);
+        /*
+        final View controlsView = findViewById(R.id.fullscreen_content_controls);
+        final View contentView = findViewById(R.id.fullscreen_content);
 
         // Set up an instance of SystemUiHider to control the system UI for
         // this activity.
-        //mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
-        //mSystemUiHider.setup();
-        /*
+        mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
+        mSystemUiHider.setup();
         mSystemUiHider
                 .setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
                     // Cached values.
@@ -139,9 +134,7 @@ public class Jukebox extends Activity {
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById(R.id.playButton).setOnTouchListener(mDelayHideTouchListener);
-        findViewById(R.id.pauseButton).setOnTouchListener(mDelayHideTouchListener);
-        findViewById(R.id.libraryButton).setOnTouchListener(mDelayHideTouchListener);
+        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
         */
     }
 
@@ -155,6 +148,15 @@ public class Jukebox extends Activity {
         //delayedHide(100);
     }
 
+
+    @Override
+    public void onBackPressed() {
+        ListView listView = (ListView)findViewById(R.id.musicListView);
+
+        if (!((MusicAdapter)listView.getAdapter()).goBack()) {
+            super.onBackPressed();
+        }
+    }
 
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
@@ -188,26 +190,102 @@ public class Jukebox extends Activity {
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
-    private void setMultiSegmentFont(int id) {
-        TextView myTextView = (TextView)findViewById(id);
-        Typeface typeFace = Typeface.createFromAsset(getAssets(), "fonts/LCD.otf");
-        myTextView.setTextSize(40.0f);
-        myTextView.setTypeface(typeFace);
-    }
+    private class MusicAdapter extends BaseAdapter {
+        private NamedItem rootItem = null;
+        private Set<NamedItem> selected = new HashSet<NamedItem>();
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(Menu.NONE, 0, 0, "Settings");
-        return super.onCreateOptionsMenu(menu);
-    }
+        @Override
+        public int getCount() {
+            if (rootItem == null) {
+                return MusicDatabase.getInstance(getApplicationContext()).getArtists().size();
+            } else if (rootItem instanceof Artist) {
+                return ((Artist)rootItem).getAlbums().size();
+            } else if (rootItem instanceof Album) {
+                return ((Album)rootItem).getSongs().size();
+            }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case 0:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
+            return 0;
         }
-        return false;
+
+        @Override
+        public Object getItem(int position) {
+            if (rootItem == null) {
+                return MusicDatabase.getInstance(getApplicationContext()).getArtists().get(position);
+            } else if (rootItem instanceof Artist) {
+                return ((Artist)rootItem).getAlbums().get(position);
+            } else if (rootItem instanceof Album) {
+                return ((Album)rootItem).getSongs().get(position);
+            }
+
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            if (rootItem == null) {
+                return MusicDatabase.getInstance(getApplicationContext()).getArtists().get(position).getId();
+            } else if (rootItem instanceof Artist) {
+                return ((Artist)rootItem).getAlbums().get(position).getId();
+            } else if (rootItem instanceof Album) {
+                return ((Album)rootItem).getSongs().get(position).getId();
+            }
+
+            return -1;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            final NamedItem namedItem = (NamedItem)getItem(position);
+
+            View rowView = getLayoutInflater().inflate(R.layout.checkbox_item, parent, false);
+
+            TextView textView = (TextView)rowView.findViewById(R.id.musicText);
+            Typeface typeFace = Typeface.createFromAsset(getAssets(), "fonts/LCD.otf");
+            textView.setTextSize(20.0f);
+            textView.setTypeface(typeFace);
+            textView.setText(namedItem.getName());
+
+            if (!(namedItem instanceof Song)) textView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    setRootItem(namedItem);
+                }
+            });
+
+            final CheckBox checkBox = (CheckBox)rowView.findViewById(R.id.musicCheckbox);
+            checkBox.setChecked(selected.contains(namedItem));
+            checkBox.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (checkBox.isChecked()) {
+                        selected.add(namedItem);
+                    } else {
+                        selected.remove(namedItem);
+                    }
+                }
+            });
+
+            return rowView;
+        }
+
+        private void setRootItem(NamedItem rootItem) {
+            this.rootItem = rootItem;
+
+            notifyDataSetChanged();
+        }
+
+        public boolean goBack() {
+            if (rootItem == null) {
+                return false;
+            } else if (rootItem instanceof Artist) {
+                rootItem = null;
+            } else if (rootItem instanceof Album) {
+                rootItem = ((Album)rootItem).getArtist();
+            }
+
+            notifyDataSetChanged();
+
+            return true;
+        }
     }
 }

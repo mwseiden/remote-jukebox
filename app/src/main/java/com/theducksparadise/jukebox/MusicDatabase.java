@@ -310,6 +310,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 song.setFileName(file.getAbsolutePath());
                 song.setSequence(sequence);
                 song.setAlbum(album);
+                album.getSongs().add(song);
 
             } catch (IOException | ArrayIndexOutOfBoundsException e) {
                 // Well that sucks. Ignore it.
