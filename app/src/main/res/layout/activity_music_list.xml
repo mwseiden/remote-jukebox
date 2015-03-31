@@ -7,14 +7,15 @@
 
 <ListView
         android:layout_width="wrap_content"
-        android:layout_height="524dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:id="@+id/musicListView"
         android:layout_gravity="left|top"
         android:background="#ff000000" />
 
     <ImageButton
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="48dp"
         android:id="@+id/queueButton"
         android:background="#ff202020"
         android:nestedScrollingEnabled="false" />

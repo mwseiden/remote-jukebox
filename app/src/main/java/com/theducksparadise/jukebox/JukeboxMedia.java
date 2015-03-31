@@ -95,12 +95,13 @@ public class JukeboxMedia {
                 });
                 currentPlayer.prepare();
                 currentPlayer.start();
-                signalRefresh();
                 success = true;
             } catch (IOException e) {
                 success = false;
             }
         }
+
+        signalRefresh();
     }
 
     private void signalRefresh() {

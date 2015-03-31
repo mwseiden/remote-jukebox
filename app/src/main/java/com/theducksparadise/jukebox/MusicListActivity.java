@@ -22,6 +22,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -207,7 +208,7 @@ public class MusicListActivity extends Activity {
 
     private class MusicAdapter extends BaseAdapter {
         private NamedItem rootItem = null;
-        private Set<NamedItem> selected = new HashSet<NamedItem>();
+        private Set<NamedItem> selected = new LinkedHashSet<NamedItem>();
         private Stack<Integer> positions = new Stack<Integer>();
 
         @Override
