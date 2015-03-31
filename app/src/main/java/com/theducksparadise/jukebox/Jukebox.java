@@ -1,5 +1,6 @@
 package com.theducksparadise.jukebox;
 
+import com.theducksparadise.jukebox.domain.Song;
 import com.theducksparadise.jukebox.util.SystemUiHider;
 
 import android.annotation.TargetApi;
@@ -9,6 +10,7 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -26,6 +28,8 @@ import android.widget.TextView;
  * @see SystemUiHider
  */
 public class Jukebox extends Activity {
+    public static final int UPDATE_QUEUE_MESSAGE = 412391221;
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -53,6 +57,8 @@ public class Jukebox extends Activity {
      * The instance of the {@link SystemUiHider} for this activity.
      */
     private SystemUiHider mSystemUiHider;
+
+    private static Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +98,9 @@ public class Jukebox extends Activity {
                 JukeboxMedia.getInstance().togglePlay();
             }
         });
+
+        handler = new QueueHandler(this);
+        JukeboxMedia.getInstance().setHandler(handler);
 
         //final View controlsView = findViewById(R.id.fullscreen_content_controls);
         //final View contentView = findViewById(R.id.fullscreen_content_controls);
@@ -224,5 +233,40 @@ public class Jukebox extends Activity {
                 return true;
         }
         return false;
+    }
+
+    public void updateNowPlaying() {
+        TextView titleTextView = (TextView) findViewById(R.id.titleText);
+        TextView artistTextView = (TextView) findViewById(R.id.artistText);
+        TextView albumTextView = (TextView) findViewById(R.id.albumText);
+
+        Song song = JukeboxMedia.getInstance().getCurrentSong();
+
+        if (song != null) {
+            titleTextView.setText(song.getName());
+            albumTextView.setText(song.getAlbum().getName());
+            artistTextView.setText(song.getAlbum().getArtist().getName());
+        } else {
+            titleTextView.setText("");
+            albumTextView.setText("");
+            artistTextView.setText("");
+        }
+
+    }
+
+    private static class QueueHandler extends Handler {
+        private Jukebox activity;
+
+        public QueueHandler(Jukebox activity) {
+            this.activity = activity;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == UPDATE_QUEUE_MESSAGE){
+                activity.updateNowPlaying();
+            }
+            super.handleMessage(msg);
+        }
     }
 }

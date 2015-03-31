@@ -17,10 +17,12 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
@@ -72,7 +74,19 @@ public class MusicListActivity extends Activity {
 
         ListView listView = (ListView)findViewById(R.id.musicListView);
 
-        listView.setAdapter(new MusicAdapter());
+        final MusicAdapter musicAdapter = new MusicAdapter();
+
+        listView.setAdapter(musicAdapter);
+
+        ImageButton queueButton = (ImageButton)findViewById(R.id.queueButton);
+
+        queueButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JukeboxMedia.getInstance().addToQueue(musicAdapter.getSelected());
+                finish();
+            }
+        });
 
         /*
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
@@ -292,6 +306,10 @@ public class MusicListActivity extends Activity {
             listView.setSelection(positions.pop());
 
             return true;
+        }
+
+        public Set<NamedItem> getSelected() {
+            return selected;
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.theducksparadise.jukebox;
 
 import android.media.MediaPlayer;
+import android.os.Handler;
+import android.os.Message;
 
 import com.theducksparadise.jukebox.domain.NamedItem;
 import com.theducksparadise.jukebox.domain.Song;
@@ -20,6 +22,8 @@ public class JukeboxMedia {
 
     private Song currentSong = null;
 
+    private Handler handler = null;
+
     private JukeboxMedia() {
     }
 
@@ -36,31 +40,11 @@ public class JukeboxMedia {
     }
 
     public void addToQueue(Collection<NamedItem> items) {
-        queue.addAll(items);
-
-        if (currentPlayer == null && !queue.isEmpty()) {
-            boolean success = false;
-            while (queue.size() > 0 && !success) {
-                try {
-                    if (currentPlayer != null) currentPlayer.release();
-                    currentPlayer = new MediaPlayer();
-                    currentPlayer.setDataSource(((Song) queue.poll()).getFileName());
-                    currentPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        @Override
-                        public void onCompletion(MediaPlayer mp) {
-                            mp.release();
-                            if (queue.size() > 0) {
-                                //
-                            }
-                        }
-                    });
-                    currentPlayer.start();
-                    success = true;
-                } catch (IOException e) {
-                    success = false;
-                }
-            }
+        for (NamedItem item: items) {
+            queue.addAll(item.getSongsForQueue());
         }
+
+        if (currentPlayer == null) queueNext();
     }
 
     public void clearQueue() {
@@ -68,14 +52,65 @@ public class JukeboxMedia {
     }
 
     public void skip() {
-
+        queueNext();
     }
 
     public void togglePlay() {
-
+        if (currentPlayer != null) {
+            if (currentPlayer.isPlaying()) {
+                currentPlayer.pause();
+            } else {
+                currentPlayer.start();
+            }
+        }
     }
 
     public Song getCurrentSong() {
         return currentSong;
+    }
+
+    public void setHandler(Handler handler) {
+        this.handler = handler;
+    }
+
+    private void queueNext() {
+        if (currentPlayer != null) {
+            currentPlayer.release();
+            currentPlayer = null;
+            currentSong = null;
+        }
+
+        boolean success = false;
+        while (queue.size() > 0 && !success) {
+            try {
+                currentSong = (Song) queue.poll();
+                currentPlayer = new MediaPlayer();
+                currentPlayer.setDataSource(currentSong.getFileName());
+                currentPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        mp.release();
+                        queueNext();
+                    }
+                });
+                currentPlayer.prepare();
+                currentPlayer.start();
+                signalRefresh();
+                success = true;
+            } catch (IOException e) {
+                success = false;
+            }
+        }
+    }
+
+    private void signalRefresh() {
+        if (handler != null) {
+            Message message = new Message();
+
+            message.what = Jukebox.UPDATE_QUEUE_MESSAGE;
+
+            handler.sendMessage(message);
+
+        }
     }
 }

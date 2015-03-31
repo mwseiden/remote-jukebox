@@ -15,7 +15,7 @@
     <ImageButton
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/imageButton"
+        android:id="@+id/queueButton"
         android:background="#ff202020"
         android:nestedScrollingEnabled="false" />
 </LinearLayout>
