@@ -52,6 +52,7 @@ public class JukeboxMedia {
 
     public void clearQueue() {
         queue.clear();
+        signalRefresh();
     }
 
     public void skip() {

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.theducksparadise.jukebox.domain.Album;
 import com.theducksparadise.jukebox.domain.Artist;
+import com.theducksparadise.jukebox.domain.NamedItem;
 import com.theducksparadise.jukebox.domain.Song;
 
 import org.cmc.music.metadata.IMusicMetadata;
@@ -18,6 +19,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +102,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
     public void synchronizeWithFileSystem(String path, AsyncProgress asyncProgress) {
         clearDatabase(asyncProgress);
         rebuildDatabase(path, asyncProgress);
+        sort(asyncProgress);
     }
 
     private void reloadDatabase() {
@@ -253,14 +257,18 @@ public class MusicDatabase extends SQLiteOpenHelper {
         }
     }
 
+    public void clearDatabase() {
+        clearDatabase(null);
+    }
+
     private void clearDatabase(AsyncProgress asyncProgress) {
-        asyncProgress.updateProgress("Clearing Songs");
+        if (asyncProgress != null) asyncProgress.updateProgress("Clearing Songs");
         getWritableDatabase().execSQL("DELETE FROM " + SONG_TABLE_NAME + ";");
 
-        asyncProgress.updateProgress("Clearing Albums");
+        if (asyncProgress != null) asyncProgress.updateProgress("Clearing Albums");
         getWritableDatabase().execSQL("DELETE FROM " + ALBUM_TABLE_NAME + ";");
 
-        asyncProgress.updateProgress("Clearing Artists");
+        if (asyncProgress != null) asyncProgress.updateProgress("Clearing Artists");
         getWritableDatabase().execSQL("DELETE FROM " + ARTIST_TABLE_NAME + ";");
 
         artists.clear();
@@ -372,5 +380,34 @@ public class MusicDatabase extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) song.setId(cursor.getInt(0));
 
         cursor.close();
+    }
+
+    private void sort(AsyncProgress asyncProgress) {
+        asyncProgress.updateProgress("Sorting");
+        sortNamedItems(artists);
+        for (Artist artist: artists) {
+            sortNamedItems(artist.getAlbums());
+            for (Album album: artist.getAlbums()) {
+                sortSongs(album.getSongs());
+            }
+        }
+    }
+
+    private <T extends NamedItem> void sortNamedItems(List<T> items) {
+        Collections.sort(items, new Comparator<NamedItem>() {
+            @Override
+            public int compare(NamedItem lhs, NamedItem rhs) {
+                return lhs.getName().compareTo(rhs.getName());
+            }
+        });
+    }
+
+    private void sortSongs(List<Song> songs) {
+        Collections.sort(songs, new Comparator<Song>() {
+            @Override
+            public int compare(Song lhs, Song rhs) {
+                return Integer.compare(lhs.getSequence(), rhs.getSequence());
+            }
+        });
     }
 }

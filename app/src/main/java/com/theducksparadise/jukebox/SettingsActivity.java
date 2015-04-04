@@ -1,7 +1,9 @@
 package com.theducksparadise.jukebox;
 
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -38,6 +40,8 @@ public class SettingsActivity extends PreferenceActivity {
     private PreferenceScreen filePickerControl;
 
     private Preference refreshDatabaseControl;
+
+    private Preference clearDatabaseControl;
 
 
     @Override
@@ -87,6 +91,16 @@ public class SettingsActivity extends PreferenceActivity {
                 Intent intent = new Intent(getApplicationContext(), RefreshDatabaseWaitActivity.class);
                 intent.putExtra(RefreshDatabaseWaitActivity.PATH, loadStringPreference(filePickerControl.getKey(), null));
                 startActivity(intent);
+                return true;
+            }
+        });
+
+        clearDatabaseControl = findPreference("clear_db");
+
+        clearDatabaseControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                doClearDatabase(preference.getContext());
                 return true;
             }
         });
@@ -312,5 +326,26 @@ public class SettingsActivity extends PreferenceActivity {
     private void setDefaultDirectory(String path) {
         filePickerControl.getIntent().putExtra(DirectoryPicker.START_DIR, path);
         filePickerControl.setSummary(path == null ? "Nothing Selected" : path);
+    }
+
+    private void doClearDatabase(final Context context) {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        MusicDatabase.getInstance(context).clearDatabase();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        // 'No' button clicked
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
     }
 }

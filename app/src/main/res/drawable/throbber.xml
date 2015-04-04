@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list android:oneshot="false" xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/throbber_000" android:duration="50" />
+    <item android:drawable="@drawable/throbber_001" android:duration="50" />
+    <item android:drawable="@drawable/throbber_002" android:duration="50" />
+    <item android:drawable="@drawable/throbber_003" android:duration="50" />
+    <item android:drawable="@drawable/throbber_004" android:duration="50" />
+    <item android:drawable="@drawable/throbber_005" android:duration="50" />
+    <item android:drawable="@drawable/throbber_006" android:duration="50" />
+    <item android:drawable="@drawable/throbber_007" android:duration="50" />
+    <item android:drawable="@drawable/throbber_008" android:duration="50" />
+    <item android:drawable="@drawable/throbber_009" android:duration="50" />
+    <item android:drawable="@drawable/throbber_010" android:duration="50" />
+    <item android:drawable="@drawable/throbber_011" android:duration="50" />
+    <item android:drawable="@drawable/throbber_012" android:duration="50" />
+</animation-list>

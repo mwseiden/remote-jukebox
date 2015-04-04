@@ -72,7 +72,7 @@ public class RefreshDatabaseWaitActivity extends Activity {
         setContentView(R.layout.activity_wait);
 
         setDoingSomethingText("Reloading Database");
-        setProgressText("...");
+        setProgressText("Initializing...");
 
         Bundle extras = getIntent().getExtras();
 

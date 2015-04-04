@@ -227,7 +227,8 @@ public class Jukebox extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(Menu.NONE, 0, 0, "Settings");
+        menu.add(Menu.NONE, 0, 0, "Clear Queue");
+        menu.add(Menu.NONE, 1, 1, "Settings");
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -235,6 +236,9 @@ public class Jukebox extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case 0:
+                JukeboxMedia.getInstance().clearQueue();
+                return true;
+            case 1:
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
         }
