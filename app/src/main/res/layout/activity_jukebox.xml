@@ -78,7 +78,7 @@
                 android:id="@+id/queueText"
                 android:layout_gravity="center|bottom"
                 android:layout_weight="1"
-                android:textColor="#ffff0000" />
+                android:textColor="#ff0080ff" />
         </LinearLayout>
 
     <FrameLayout
@@ -90,18 +90,20 @@
         android:weightSum="1">
 
         <ImageButton
-            android:layout_width="90dp"
-            android:layout_height="90dp"
+            android:layout_width="96dp"
+            android:layout_height="120dp"
             android:id="@+id/playButton"
             android:layout_gravity="left|bottom"
-            android:contentDescription="Play Button" />
+            android:contentDescription="Play Button"
+            android:background="@drawable/play_button" />
 
         <ImageButton
-            android:layout_width="90dp"
-            android:layout_height="90dp"
+            android:layout_width="96dp"
+            android:layout_height="120dp"
             android:id="@+id/nextButton"
             android:layout_gravity="center_horizontal|bottom"
-            android:contentDescription="Pause Button" />
+            android:contentDescription="Pause Button"
+            android:background="@drawable/next_unavailable_button" />
 
         <ImageButton
             android:layout_width="96dp"
