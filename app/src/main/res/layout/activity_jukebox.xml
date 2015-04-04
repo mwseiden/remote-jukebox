@@ -81,7 +81,7 @@
                 android:textColor="#ffff0000" />
         </LinearLayout>
 
-    <LinearLayout
+    <FrameLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
@@ -104,12 +104,13 @@
             android:contentDescription="Pause Button" />
 
         <ImageButton
-            android:layout_width="90dp"
-            android:layout_height="90dp"
+            android:layout_width="96dp"
+            android:layout_height="120dp"
             android:id="@+id/libraryButton"
             android:layout_gravity="right|bottom"
-            android:contentDescription="Play Button" />
-    </LinearLayout>
+            android:contentDescription="Play Button"
+            android:background="@drawable/songs" />
+    </FrameLayout>
 
     </LinearLayout>
 
