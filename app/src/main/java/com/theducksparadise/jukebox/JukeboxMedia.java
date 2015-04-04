@@ -43,7 +43,11 @@ public class JukeboxMedia {
             queue.addAll(item.getSongsForQueue());
         }
 
-        if (currentPlayer == null) queueNext();
+        if (currentPlayer == null) {
+            queueNext();
+        } else {
+            signalRefresh();
+        }
     }
 
     public void clearQueue() {
