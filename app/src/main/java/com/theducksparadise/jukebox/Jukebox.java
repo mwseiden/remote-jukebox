@@ -284,6 +284,8 @@ public class Jukebox extends Activity {
             artistTextView.setText("");
             queueTextView.setText("");
         }
+
+        updateSlider();
     }
 
     private String getQueueText() {
@@ -341,11 +343,13 @@ public class Jukebox extends Activity {
         @Override
         public void run() {
             try {
-                Message message = new Message();
+                if (JukeboxMedia.getInstance().getCurrentSong() != null) {
+                    Message message = new Message();
 
-                message.what = UPDATE_SLIDER_MESSAGE;
+                    message.what = UPDATE_SLIDER_MESSAGE;
 
-                handler.sendMessage(message);
+                    handler.sendMessage(message);
+                }
             } finally {
                 handler.postDelayed(this, SLIDER_UPDATE_TIME);
             }
