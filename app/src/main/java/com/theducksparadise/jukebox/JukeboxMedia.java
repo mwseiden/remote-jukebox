@@ -9,14 +9,13 @@ import com.theducksparadise.jukebox.domain.Song;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class JukeboxMedia {
 
     private static volatile JukeboxMedia instance;
 
-    private Queue<NamedItem> queue = new ConcurrentLinkedQueue<NamedItem>();
+    private ConcurrentLinkedQueue<NamedItem> queue = new ConcurrentLinkedQueue<NamedItem>();
 
     private MediaPlayer currentPlayer = null;
 
@@ -67,6 +66,10 @@ public class JukeboxMedia {
 
     public Song getCurrentSong() {
         return currentSong;
+    }
+
+    public ConcurrentLinkedQueue<NamedItem> getQueue() {
+        return queue;
     }
 
     public void setHandler(Handler handler) {

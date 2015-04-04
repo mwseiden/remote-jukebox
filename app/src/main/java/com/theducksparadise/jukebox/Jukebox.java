@@ -1,5 +1,6 @@
 package com.theducksparadise.jukebox;
 
+import com.theducksparadise.jukebox.domain.NamedItem;
 import com.theducksparadise.jukebox.domain.Song;
 import com.theducksparadise.jukebox.util.SystemUiHider;
 
@@ -244,6 +245,7 @@ public class Jukebox extends Activity {
         TextView titleTextView = (TextView) findViewById(R.id.titleText);
         TextView artistTextView = (TextView) findViewById(R.id.artistText);
         TextView albumTextView = (TextView) findViewById(R.id.albumText);
+        TextView queueTextView = (TextView) findViewById(R.id.queueText);
 
         Song song = JukeboxMedia.getInstance().getCurrentSong();
 
@@ -251,12 +253,23 @@ public class Jukebox extends Activity {
             titleTextView.setText(song.getName());
             albumTextView.setText(song.getAlbum().getName());
             artistTextView.setText(song.getAlbum().getArtist().getName());
+            queueTextView.setText(getQueueText());
         } else {
             titleTextView.setText("");
             albumTextView.setText("");
             artistTextView.setText("");
+            queueTextView.setText("");
+        }
+    }
+
+    private String getQueueText() {
+        String queueText = "";
+
+        for (NamedItem item: JukeboxMedia.getInstance().getQueue()) {
+            queueText += item.getName() + "\n";
         }
 
+        return queueText;
     }
 
     private static class QueueHandler extends Handler {
