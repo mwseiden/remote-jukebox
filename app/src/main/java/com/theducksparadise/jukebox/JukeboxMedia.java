@@ -81,6 +81,18 @@ public class JukeboxMedia {
         this.handler = handler;
     }
 
+    public Integer getProgress() {
+        return currentPlayer == null ? null : currentPlayer.getCurrentPosition();
+    }
+
+    public void setProgress(int progress) {
+        if (currentPlayer != null) currentPlayer.seekTo(progress);
+    }
+
+    public Integer getDuration() {
+        return currentPlayer == null ? null : currentPlayer.getDuration();
+    }
+
     private void queueNext() {
         if (currentPlayer != null) {
             currentPlayer.release();

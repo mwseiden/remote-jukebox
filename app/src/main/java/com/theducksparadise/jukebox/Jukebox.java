@@ -4,11 +4,9 @@ import com.theducksparadise.jukebox.domain.NamedItem;
 import com.theducksparadise.jukebox.domain.Song;
 import com.theducksparadise.jukebox.util.SystemUiHider;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -19,6 +17,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 
@@ -30,6 +29,9 @@ import android.widget.TextView;
  */
 public class Jukebox extends Activity {
     public static final int UPDATE_QUEUE_MESSAGE = 412391221;
+    public static final int UPDATE_SLIDER_MESSAGE = 412392221;
+
+    private static final int SLIDER_UPDATE_TIME = 200;
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -101,8 +103,26 @@ public class Jukebox extends Activity {
             }
         });
 
+        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBar.setVisibility(View.INVISIBLE);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                JukeboxMedia.getInstance().setProgress(seekBar.getProgress());
+            }
+        });
+
         handler = new QueueHandler(this);
         JukeboxMedia.getInstance().setHandler(handler);
+        handler.postDelayed(new SliderThread(handler), SLIDER_UPDATE_TIME);
 
         //final View controlsView = findViewById(R.id.fullscreen_content_controls);
         //final View contentView = findViewById(R.id.fullscreen_content_controls);
@@ -276,6 +296,21 @@ public class Jukebox extends Activity {
         return queueText;
     }
 
+    private void updateSlider() {
+        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
+
+        Integer duration = JukeboxMedia.getInstance().getDuration();
+        Integer progress = JukeboxMedia.getInstance().getProgress();
+
+        if (duration != null && progress != null) {
+            seekBar.setVisibility(View.VISIBLE);
+            seekBar.setMax(duration);
+            seekBar.setProgress(progress);
+        } else {
+            seekBar.setVisibility(View.INVISIBLE);
+        }
+    }
+
     private static class QueueHandler extends Handler {
         private Jukebox activity;
 
@@ -287,8 +322,33 @@ public class Jukebox extends Activity {
         public void handleMessage(Message msg) {
             if (msg.what == UPDATE_QUEUE_MESSAGE){
                 activity.updateNowPlaying();
+            } if (msg.what == UPDATE_SLIDER_MESSAGE) {
+                activity.updateSlider();
             }
+
             super.handleMessage(msg);
+        }
+    }
+
+    private class SliderThread implements Runnable {
+
+        Handler handler;
+
+        public SliderThread(Handler handler) {
+            this.handler = handler;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Message message = new Message();
+
+                message.what = UPDATE_SLIDER_MESSAGE;
+
+                handler.sendMessage(message);
+            } finally {
+                handler.postDelayed(this, SLIDER_UPDATE_TIME);
+            }
         }
     }
 }
