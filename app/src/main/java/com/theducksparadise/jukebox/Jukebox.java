@@ -73,6 +73,7 @@ public class Jukebox extends Activity {
         setMultiSegmentFont(R.id.artistText);
         setMultiSegmentFont(R.id.albumText);
         setMultiSegmentFont(R.id.titleText);
+        setMultiSegmentFont(R.id.queueText, 20.0f);
 
         ImageButton libraryButton = (ImageButton)findViewById(R.id.libraryButton);
         libraryButton.setOnClickListener(new View.OnClickListener() {
@@ -213,9 +214,13 @@ public class Jukebox extends Activity {
     }
 
     private void setMultiSegmentFont(int id) {
+        setMultiSegmentFont(id, 40.0f);
+    }
+
+    private void setMultiSegmentFont(int id, float size) {
         TextView myTextView = (TextView)findViewById(id);
         Typeface typeFace = Typeface.createFromAsset(getAssets(), "fonts/LCD.otf");
-        myTextView.setTextSize(40.0f);
+        myTextView.setTextSize(size);
         myTextView.setTypeface(typeFace);
     }
 
