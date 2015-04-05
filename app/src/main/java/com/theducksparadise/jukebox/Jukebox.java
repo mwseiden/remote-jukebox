@@ -125,6 +125,9 @@ public class Jukebox extends Activity {
         JukeboxMedia.getInstance().setHandler(handler);
         handler.postDelayed(new SliderThread(handler), SLIDER_UPDATE_TIME);
 
+        Intent intent = new Intent(getApplicationContext(), SplashActivity.class);
+        startActivity(intent);
+
         //final View controlsView = findViewById(R.id.fullscreen_content_controls);
         //final View contentView = findViewById(R.id.fullscreen_content_controls);
 

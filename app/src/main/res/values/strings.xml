@@ -7,4 +7,5 @@
     <string name="title_activity_wait">WaitActivity</string>
 
     <string name="title_activity_music_list">MusicListActivity</string>
+    <string name="title_activity_splash">SplashActivity</string>
 </resources>

@@ -47,6 +47,13 @@
             android:theme="@style/FullscreenTheme"
             android:screenOrientation="portrait">
         </activity>
+        <activity
+            android:name=".SplashActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_music_list"
+            android:theme="@style/FullscreenTheme"
+            android:screenOrientation="portrait">
+        </activity>
     </application>
 
 </manifest>
