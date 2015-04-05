@@ -93,6 +93,10 @@ public class JukeboxMedia {
         return currentPlayer == null ? null : currentPlayer.getDuration();
     }
 
+    public boolean isPlaying() {
+        return currentPlayer != null && currentPlayer.isPlaying();
+    }
+
     private void queueNext() {
         if (currentPlayer != null) {
             currentPlayer.release();

@@ -100,6 +100,7 @@ public class Jukebox extends Activity {
             @Override
             public void onClick(View v) {
                 JukeboxMedia.getInstance().togglePlay();
+                updatePlayButton();
             }
         });
 
@@ -270,6 +271,7 @@ public class Jukebox extends Activity {
         TextView artistTextView = (TextView) findViewById(R.id.artistText);
         TextView albumTextView = (TextView) findViewById(R.id.albumText);
         TextView queueTextView = (TextView) findViewById(R.id.queueText);
+        ImageButton nextButton = (ImageButton) findViewById(R.id.nextButton);
 
         Song song = JukeboxMedia.getInstance().getCurrentSong();
 
@@ -278,14 +280,33 @@ public class Jukebox extends Activity {
             albumTextView.setText(song.getAlbum().getName());
             artistTextView.setText(song.getAlbum().getArtist().getName());
             queueTextView.setText(getQueueText());
+            if (JukeboxMedia.getInstance().getQueue().isEmpty()) {
+                nextButton.setBackgroundResource(R.drawable.next_unavailable_button);
+            } else {
+                nextButton.setBackgroundResource(R.drawable.skip);
+            }
         } else {
             titleTextView.setText("");
             albumTextView.setText("");
             artistTextView.setText("");
             queueTextView.setText("");
+            nextButton.setBackgroundResource(R.drawable.next_unavailable_button);
         }
 
+        updatePlayButton();
         updateSlider();
+    }
+
+    private void updatePlayButton() {
+        ImageButton playButton = (ImageButton) findViewById(R.id.playButton);
+
+        if (JukeboxMedia.getInstance().getCurrentSong() == null) {
+            playButton.setBackgroundResource(R.drawable.play_button);
+        } else if (JukeboxMedia.getInstance().isPlaying()) {
+            playButton.setBackgroundResource(R.drawable.pause);
+        } else {
+            playButton.setBackgroundResource(R.drawable.play);
+        }
     }
 
     private String getQueueText() {
