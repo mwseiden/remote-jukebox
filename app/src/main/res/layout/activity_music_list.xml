@@ -9,15 +9,14 @@
 <ListView
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="0.94"
         android:id="@+id/musicListView"
-        android:layout_gravity="left|top"
         android:background="#ff000000" />
 
     <ImageButton
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="0dp"
+        android:layout_weight="0.06"
         android:id="@+id/queueButton"
-        android:background="#ff202020"
-        android:nestedScrollingEnabled="false" />
+        android:background="@drawable/queue_unavailable" />
 </LinearLayout>

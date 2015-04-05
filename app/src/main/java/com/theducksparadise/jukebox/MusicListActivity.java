@@ -280,6 +280,8 @@ public class MusicListActivity extends Activity {
                     } else {
                         selected.remove(namedItem);
                     }
+
+                    updateQueueButton();
                 }
             });
 
@@ -311,6 +313,16 @@ public class MusicListActivity extends Activity {
 
         public Set<NamedItem> getSelected() {
             return selected;
+        }
+
+        private void updateQueueButton() {
+            ImageButton queueButton = (ImageButton)findViewById(R.id.queueButton);
+
+            if (selected.isEmpty()) {
+                queueButton.setBackgroundResource(R.drawable.queue_unavailable);
+            } else {
+                queueButton.setBackgroundResource(R.drawable.queue);
+            }
         }
     }
 }

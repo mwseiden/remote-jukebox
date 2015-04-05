@@ -280,11 +280,7 @@ public class Jukebox extends Activity {
             albumTextView.setText(song.getAlbum().getName());
             artistTextView.setText(song.getAlbum().getArtist().getName());
             queueTextView.setText(getQueueText());
-            if (JukeboxMedia.getInstance().getQueue().isEmpty()) {
-                nextButton.setBackgroundResource(R.drawable.next_unavailable_button);
-            } else {
-                nextButton.setBackgroundResource(R.drawable.skip);
-            }
+            nextButton.setBackgroundResource(R.drawable.skip);
         } else {
             titleTextView.setText("");
             albumTextView.setText("");
