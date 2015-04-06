@@ -21,7 +21,7 @@
             <TextView
                 android:layout_width="350dp"
                 android:layout_height="wrap_content"
-                android:text="Title"
+                android:text=""
                 android:id="@+id/titleText"
                 android:layout_gravity="center_horizontal"
                 android:layout_weight="0.33"
@@ -31,7 +31,7 @@
             <TextView
                 android:layout_width="350dp"
                 android:layout_height="wrap_content"
-                android:text="Artist"
+                android:text=""
                 android:id="@+id/artistText"
                 android:layout_gravity="center_horizontal"
                 android:layout_weight="0.33"
@@ -41,7 +41,7 @@
             <TextView
                 android:layout_width="350dp"
                 android:layout_height="wrap_content"
-                android:text="Album"
+                android:text=""
                 android:id="@+id/albumText"
                 android:layout_gravity="center_horizontal"
                 android:layout_weight="0.33"
@@ -74,7 +74,7 @@
             <TextView
                 android:layout_width="350dp"
                 android:layout_height="0dp"
-                android:text="Queue"
+                android:text=""
                 android:id="@+id/queueText"
                 android:layout_gravity="center|bottom"
                 android:layout_weight="1"
