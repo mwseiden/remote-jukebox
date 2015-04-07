@@ -15,7 +15,7 @@ public class JukeboxMedia {
 
     private static volatile JukeboxMedia instance;
 
-    private ConcurrentLinkedQueue<Song> queue = new ConcurrentLinkedQueue<Song>();
+    private ConcurrentLinkedQueue<Song> queue = new ConcurrentLinkedQueue<>();
 
     private MediaPlayer currentPlayer = null;
 

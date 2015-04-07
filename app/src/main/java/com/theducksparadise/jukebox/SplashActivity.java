@@ -18,6 +18,10 @@ public class SplashActivity extends Activity {
 
     private Handler handler;
 
+    public static boolean isQueueLoaded() {
+        return queueLoaded;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -25,7 +25,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 public class MusicDatabase extends SQLiteOpenHelper {
 
@@ -125,17 +124,27 @@ public class MusicDatabase extends SQLiteOpenHelper {
         clearDatabase(null);
     }
 
-    public void saveQueue(Collection<Song> queue) {
-        deleteSavedQueue();
+    public void saveQueue(final Song currentSong, final Collection<Song> queue) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                getWritableDatabase().beginTransaction();
 
-        int i = 0;
-        for (Song song: queue) {
-            getWritableDatabase().execSQL(
-                    "INSERT INTO " + QUEUE_TABLE_NAME + " (song_id, sequence) VALUES (?, ?);",
-                    new Object[]{song.getId(), i}
-            );
-            i++;
-        }
+                deleteSavedQueue();
+
+                if (currentSong != null) saveQueueItem(currentSong, 0);
+
+                int i = 1;
+                for (Song song: queue) {
+                    saveQueueItem(song, i);
+                    i++;
+                }
+
+                getWritableDatabase().setTransactionSuccessful();
+                getWritableDatabase().endTransaction();
+
+            }
+        }).start();
     }
 
     public List<Song> loadQueue() {
@@ -249,6 +258,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
     }
 
     // TODO: Refactor this so it isn't so redundant
+    @SuppressWarnings("unused")
     private void removeMissingFiles() {
         List<Artist> emptyArtists = new ArrayList<>();
 
@@ -441,6 +451,13 @@ public class MusicDatabase extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) song.setId(cursor.getInt(0));
 
         cursor.close();
+    }
+
+    private void saveQueueItem(Song song, Integer sequence) {
+        getWritableDatabase().execSQL(
+                "INSERT INTO " + QUEUE_TABLE_NAME + " (song_id, sequence) VALUES (?, ?);",
+                new Object[]{song.getId(), sequence}
+        );
     }
 
     private void sort(AsyncProgress asyncProgress) {
