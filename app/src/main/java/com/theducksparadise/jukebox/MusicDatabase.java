@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class MusicDatabase extends SQLiteOpenHelper {
 
@@ -171,6 +172,12 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
     public void deleteSavedQueue() {
         getWritableDatabase().execSQL("DELETE FROM " + QUEUE_TABLE_NAME + ";");
+    }
+
+    public Song getRandomSong() {
+        Random random = new Random();
+        Object[] songs = songIndex.values().toArray();
+        return (Song)songs[random.nextInt(songs.length)];
     }
 
     private void reloadDatabase() {

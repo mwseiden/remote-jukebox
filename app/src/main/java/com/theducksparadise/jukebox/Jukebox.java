@@ -123,6 +123,7 @@ public class Jukebox extends Activity {
         switch (item.getItemId()) {
             case 0:
                 JukeboxMedia.getInstance().clearQueue();
+                MusicDatabase.getInstance(getApplicationContext()).deleteSavedQueue();
                 return true;
             case 1:
                 startActivity(new Intent(this, SettingsActivity.class));
@@ -161,6 +162,7 @@ public class Jukebox extends Activity {
             artistTextView.setText("");
             queueTextView.setText("");
             nextButton.setBackgroundResource(R.drawable.next_unavailable_button);
+            JukeboxMedia.getInstance().addToQueue(MusicDatabase.getInstance(getApplicationContext()).getRandomSong().getSongsForQueue());
         }
 
         updatePlayButton();
