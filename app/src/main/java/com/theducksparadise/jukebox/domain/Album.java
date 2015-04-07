@@ -55,8 +55,8 @@ public class Album extends NamedItem {
     }
 
     @Override
-    public Collection<NamedItem> getSongsForQueue() {
-        Collection<NamedItem> items = new ArrayList<NamedItem>();
+    public Collection<Song> getSongsForQueue() {
+        Collection<Song> items = new ArrayList<Song>();
         items.addAll(getSongs());
         return items;
     }

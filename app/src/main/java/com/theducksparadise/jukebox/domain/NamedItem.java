@@ -14,7 +14,7 @@ public abstract class NamedItem {
         this.name = name;
     }
 
-    public abstract Collection<NamedItem> getSongsForQueue();
+    public abstract Collection<Song> getSongsForQueue();
 
     @Override
     public String toString() {

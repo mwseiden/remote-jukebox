@@ -67,8 +67,8 @@ public class Song extends NamedItem {
     }
 
     @Override
-    public Collection<NamedItem> getSongsForQueue() {
-        Collection<NamedItem> items = new ArrayList<NamedItem>();
+    public Collection<Song> getSongsForQueue() {
+        Collection<Song> items = new ArrayList<>();
         items.add(this);
         return items;
     }

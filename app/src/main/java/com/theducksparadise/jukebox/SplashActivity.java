@@ -9,7 +9,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.theducksparadise.jukebox.domain.Song;
+
 public class SplashActivity extends Activity {
+    private static boolean queueLoaded = false;
 
     public static final int FINISH_MESSAGE = 412394420;
 
@@ -33,7 +36,12 @@ public class SplashActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                MusicDatabase.getInstance(getApplicationContext());
+                MusicDatabase musicDatabase = MusicDatabase.getInstance(getApplicationContext());
+
+                if (!queueLoaded) {
+                    JukeboxMedia.getInstance().addToQueue(musicDatabase.loadQueue());
+                    queueLoaded = true;
+                }
 
                 Message message = new Message();
 

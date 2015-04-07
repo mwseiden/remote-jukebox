@@ -54,8 +54,8 @@ public class Artist extends NamedItem {
     }
 
     @Override
-    public Collection<NamedItem> getSongsForQueue() {
-        Collection<NamedItem> items = new ArrayList<NamedItem>();
+    public Collection<Song> getSongsForQueue() {
+        Collection<Song> items = new ArrayList<Song>();
 
         for (Album album: getAlbums()) {
             items.addAll(album.getSongsForQueue());

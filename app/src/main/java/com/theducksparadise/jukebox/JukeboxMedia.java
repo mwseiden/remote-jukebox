@@ -15,7 +15,7 @@ public class JukeboxMedia {
 
     private static volatile JukeboxMedia instance;
 
-    private ConcurrentLinkedQueue<NamedItem> queue = new ConcurrentLinkedQueue<NamedItem>();
+    private ConcurrentLinkedQueue<Song> queue = new ConcurrentLinkedQueue<Song>();
 
     private MediaPlayer currentPlayer = null;
 
@@ -38,7 +38,7 @@ public class JukeboxMedia {
         return instance;
     }
 
-    public void addToQueue(Collection<NamedItem> items) {
+    public <T extends NamedItem> void addToQueue(Collection<T> items) {
         for (NamedItem item: items) {
             queue.addAll(item.getSongsForQueue());
         }
@@ -73,7 +73,7 @@ public class JukeboxMedia {
         return currentSong;
     }
 
-    public ConcurrentLinkedQueue<NamedItem> getQueue() {
+    public ConcurrentLinkedQueue<Song> getQueue() {
         return queue;
     }
 
@@ -107,7 +107,7 @@ public class JukeboxMedia {
         boolean success = false;
         while (queue.size() > 0 && !success) {
             try {
-                currentSong = (Song) queue.poll();
+                currentSong = queue.poll();
                 currentPlayer = new MediaPlayer();
                 currentPlayer.setDataSource(currentSong.getFileName());
                 currentPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {

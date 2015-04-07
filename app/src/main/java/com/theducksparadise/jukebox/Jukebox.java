@@ -1,6 +1,5 @@
 package com.theducksparadise.jukebox;
 
-import com.theducksparadise.jukebox.domain.NamedItem;
 import com.theducksparadise.jukebox.domain.Song;
 import com.theducksparadise.jukebox.util.SystemUiHider;
 
@@ -270,6 +269,8 @@ public class Jukebox extends Activity {
     }
 
     public void updateNowPlaying() {
+        MusicDatabase.getInstance(getApplicationContext()).saveQueue(JukeboxMedia.getInstance().getQueue());
+
         TextView titleTextView = (TextView) findViewById(R.id.titleText);
         TextView artistTextView = (TextView) findViewById(R.id.artistText);
         TextView albumTextView = (TextView) findViewById(R.id.albumText);
@@ -311,8 +312,8 @@ public class Jukebox extends Activity {
     private String getQueueText() {
         String queueText = "";
 
-        for (NamedItem item: JukeboxMedia.getInstance().getQueue()) {
-            queueText += item.getName() + "\n";
+        for (Song song: JukeboxMedia.getInstance().getQueue()) {
+            queueText += song.getName() + "\n";
         }
 
         return queueText;
@@ -342,7 +343,7 @@ public class Jukebox extends Activity {
 
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == UPDATE_QUEUE_MESSAGE){
+            if (msg.what == UPDATE_QUEUE_MESSAGE) {
                 activity.updateNowPlaying();
             } if (msg.what == UPDATE_SLIDER_MESSAGE) {
                 activity.updateSlider();

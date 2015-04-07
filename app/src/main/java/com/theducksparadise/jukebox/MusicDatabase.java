@@ -19,21 +19,26 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 public class MusicDatabase extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION_001 = 2;
+    private static final int DATABASE_VERSION_002 = 3;
+    private static final int DATABASE_VERSION = DATABASE_VERSION_002;
 
     private static final String DATABASE_NAME = "jukebox_music";
 
     private static final String ARTIST_TABLE_NAME = "artist";
     private static final String ALBUM_TABLE_NAME = "album";
     private static final String SONG_TABLE_NAME = "song";
+    private static final String QUEUE_TABLE_NAME = "queue";
 
     private static final String ARTIST_TABLE_CREATE =
             "CREATE TABLE " + ARTIST_TABLE_NAME + " (" +
@@ -56,9 +61,17 @@ public class MusicDatabase extends SQLiteOpenHelper {
                     "sequence INTEGER, " +
                     "FOREIGN KEY(album_id) REFERENCES " + ALBUM_TABLE_NAME + "(id));";
 
+    private static final String QUEUE_TABLE_CREATE =
+            "CREATE TABLE " + QUEUE_TABLE_NAME + " (" +
+                    "id INTEGER PRIMARY KEY, " +
+                    "song_id INTEGER, " +
+                    "sequence INTEGER, " +
+                    "FOREIGN KEY(song_id) REFERENCES " + SONG_TABLE_NAME + "(id));";
+
     private List<Artist> artists;
 
     private Map<String, Artist> artistIndex;
+    private Map<Integer, Song> songIndex;
 
     private static volatile MusicDatabase instance;
 
@@ -84,11 +97,14 @@ public class MusicDatabase extends SQLiteOpenHelper {
         db.execSQL(ARTIST_TABLE_CREATE);
         db.execSQL(ALBUM_TABLE_CREATE);
         db.execSQL(SONG_TABLE_CREATE);
+        db.execSQL(QUEUE_TABLE_CREATE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // dunno
+        if (oldVersion == DATABASE_VERSION_001) {
+            db.execSQL(QUEUE_TABLE_CREATE);
+        }
     }
 
     public List<Artist> getArtists() {
@@ -105,9 +121,53 @@ public class MusicDatabase extends SQLiteOpenHelper {
         sort(asyncProgress);
     }
 
+    public void clearDatabase() {
+        clearDatabase(null);
+    }
+
+    public void saveQueue(Collection<Song> queue) {
+        deleteSavedQueue();
+
+        int i = 0;
+        for (Song song: queue) {
+            getWritableDatabase().execSQL(
+                    "INSERT INTO " + QUEUE_TABLE_NAME + " (song_id, sequence) VALUES (?, ?);",
+                    new Object[]{song.getId(), i}
+            );
+            i++;
+        }
+    }
+
+    public List<Song> loadQueue() {
+        List<Song> queue = new ArrayList<>();
+
+        Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT song_id FROM " + QUEUE_TABLE_NAME + " ORDER BY sequence",
+                null
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                Song song = songIndex.get(cursor.getInt(0));
+
+                if (song != null) queue.add(song);
+
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+
+        return queue;
+    }
+
+    public void deleteSavedQueue() {
+        getWritableDatabase().execSQL("DELETE FROM " + QUEUE_TABLE_NAME + ";");
+    }
+
     private void reloadDatabase() {
-        artists = new ArrayList<Artist>();
-        artistIndex = new HashMap<String, Artist>();
+        artists = new ArrayList<>();
+        artistIndex = new HashMap<>();
+        songIndex = new HashMap<>();
 
         Cursor cursor = getReadableDatabase().rawQuery(
                 "SELECT id, name FROM " + ARTIST_TABLE_NAME + " ORDER BY name",
@@ -181,6 +241,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 song.setAlbum(album);
 
                 album.getSongs().add(song);
+                songIndex.put(song.getId(), song);
             } while (cursor.moveToNext());
         }
 
@@ -189,13 +250,13 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
     // TODO: Refactor this so it isn't so redundant
     private void removeMissingFiles() {
-        List<Artist> emptyArtists = new ArrayList<Artist>();
+        List<Artist> emptyArtists = new ArrayList<>();
 
         for (Artist artist: artists) {
-            List<Album> emptyAlbums = new ArrayList<Album>();
+            List<Album> emptyAlbums = new ArrayList<>();
 
             for (Album album: artist.getAlbums()) {
-                List<Song> removedSongList = new ArrayList<Song>();
+                List<Song> removedSongList = new ArrayList<>();
 
                 for (Song song: album.getSongs()) {
                     if (!new File(song.getFileName()).exists()) {
@@ -228,7 +289,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
         if (!root.exists()) return null;
 
-        List<File> files = new ArrayList<File>();
+        List<File> files = new ArrayList<>();
 
         addFilesToList(root, files, asyncProgress);
 
@@ -257,11 +318,10 @@ public class MusicDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public void clearDatabase() {
-        clearDatabase(null);
-    }
-
     private void clearDatabase(AsyncProgress asyncProgress) {
+        if (asyncProgress != null) asyncProgress.updateProgress("Clearing Queue");
+        deleteSavedQueue();
+
         if (asyncProgress != null) asyncProgress.updateProgress("Clearing Songs");
         getWritableDatabase().execSQL("DELETE FROM " + SONG_TABLE_NAME + ";");
 
@@ -273,6 +333,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
         artists.clear();
         artistIndex.clear();
+        songIndex.clear();
     }
 
     private void rebuildDatabase(String path, AsyncProgress asyncProgress) {
