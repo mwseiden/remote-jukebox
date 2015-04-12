@@ -177,7 +177,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
     public Song getRandomSong() {
         Random random = new Random();
         Object[] songs = songIndex.values().toArray();
-        return (Song)songs[random.nextInt(songs.length)];
+        return songs.length > 0 ? (Song)songs[random.nextInt(songs.length)] : null;
     }
 
     private void reloadDatabase() {
@@ -397,6 +397,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 song.setSequence(sequence);
                 song.setAlbum(album);
                 album.getSongs().add(song);
+                songIndex.put(song.getId(), song);
 
             } catch (IOException | ArrayIndexOutOfBoundsException e) {
                 // Well that sucks. Ignore it.

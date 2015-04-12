@@ -1,7 +1,6 @@
 package com.theducksparadise.jukebox;
 
 import com.theducksparadise.jukebox.domain.Song;
-import com.theducksparadise.jukebox.util.SystemUiHider;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,12 +18,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- *
- * @see SystemUiHider
- */
 public class Jukebox extends Activity {
     public static final int UPDATE_QUEUE_MESSAGE = 412391221;
     public static final int UPDATE_SLIDER_MESSAGE = 412392221;
@@ -162,7 +155,8 @@ public class Jukebox extends Activity {
             artistTextView.setText("");
             queueTextView.setText("");
             nextButton.setBackgroundResource(R.drawable.next_unavailable_button);
-            JukeboxMedia.getInstance().addToQueue(MusicDatabase.getInstance(getApplicationContext()).getRandomSong().getSongsForQueue());
+            Song randomSong = MusicDatabase.getInstance(getApplicationContext()).getRandomSong();
+            if (randomSong != null) JukeboxMedia.getInstance().addToQueue(randomSong.getSongsForQueue());
         }
 
         updatePlayButton();
