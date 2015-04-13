@@ -8,4 +8,5 @@
 
     <string name="title_activity_music_list">MusicListActivity</string>
     <string name="title_activity_splash">SplashActivity</string>
+    <string name="title_activity_select_tag">SelectTagActivity</string>
 </resources>

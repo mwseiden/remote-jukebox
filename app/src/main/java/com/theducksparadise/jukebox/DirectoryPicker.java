@@ -97,7 +97,7 @@ public class DirectoryPicker extends ListActivity {
 
         final ArrayList<File> files = filter(dir.listFiles(), onlyDirs, showHidden, showBacktrack);
         String[] names = names(files);
-        setListAdapter(new ArrayAdapter<String>(this, R.layout.list_item, names));
+        setListAdapter(new ArrayAdapter<>(this, R.layout.list_item, names));
 
 
         lv.setOnItemClickListener(new OnItemClickListener() {
@@ -137,7 +137,7 @@ public class DirectoryPicker extends ListActivity {
     }
 
     public ArrayList<File> filter(File[] file_list, boolean onlyDirs, boolean showHidden, boolean showBacktrack) {
-        ArrayList<File> files = new ArrayList<File>();
+        ArrayList<File> files = new ArrayList<>();
 
         if (showBacktrack) files.add(new File(".."));
 

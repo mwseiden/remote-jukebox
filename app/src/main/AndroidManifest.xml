@@ -54,6 +54,17 @@
             android:theme="@style/FullscreenTheme"
             android:screenOrientation="portrait">
         </activity>
+        <activity
+            android:name=".TagListActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_select_tag"
+            android:theme="@style/FullscreenTheme"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="jukebox.pick.tags" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

@@ -36,6 +36,8 @@ public class SettingsActivity extends PreferenceActivity {
      * shown on tablets.
      */
     private static final boolean ALWAYS_SIMPLE_PREFS = false;
+    private static final int WHITELIST_WINDOW = 1;
+    private static final int BLACKLIST_WINDOW = 2;
 
     private PreferenceScreen filePickerControl;
 
@@ -43,6 +45,7 @@ public class SettingsActivity extends PreferenceActivity {
 
     private Preference clearDatabaseControl;
 
+    private PreferenceScreen whiteListPickerControl;
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -79,6 +82,18 @@ public class SettingsActivity extends PreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 startActivityForResult(preference.getIntent(), DirectoryPicker.PICK_DIRECTORY);
+                return true;
+            }
+        });
+
+        whiteListPickerControl = (PreferenceScreen)findPreference("whitelist_picker");
+
+        setWhitelist(loadStringPreference(whiteListPickerControl.getKey(), ""));
+
+        whiteListPickerControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                startActivityForResult(preference.getIntent(), TagListActivity.PICK_TAGS);
                 return true;
             }
         });
@@ -304,11 +319,22 @@ public class SettingsActivity extends PreferenceActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Bundle extras = data.getExtras();
+
         if (requestCode == DirectoryPicker.PICK_DIRECTORY && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
             String path = (String)extras.get(DirectoryPicker.CHOSEN_DIRECTORY);
             saveStringPreference(filePickerControl.getKey(), path);
             setDefaultDirectory(path);
+        } else if (requestCode == TagListActivity.PICK_TAGS && resultCode == RESULT_OK) {
+            String tags = (String)extras.get(TagListActivity.CHOSEN_TAGS);
+            Integer windowType = (Integer)extras.get(TagListActivity.WINDOW_TYPE);
+
+            if (windowType == WHITELIST_WINDOW) {
+                saveStringPreference(whiteListPickerControl.getKey(), tags);
+                setWhitelist(tags);
+            } else {
+
+            }
         }
     }
 
@@ -326,6 +352,12 @@ public class SettingsActivity extends PreferenceActivity {
     private void setDefaultDirectory(String path) {
         filePickerControl.getIntent().putExtra(DirectoryPicker.START_DIR, path);
         filePickerControl.setSummary(path == null ? "Nothing Selected" : path);
+    }
+
+    private void setWhitelist(String tags) {
+        whiteListPickerControl.getIntent().putExtra(TagListActivity.SELECTED_TAGS, tags);
+        whiteListPickerControl.getIntent().putExtra(TagListActivity.WINDOW_TYPE, WHITELIST_WINDOW);
+        whiteListPickerControl.setSummary(tags);
     }
 
     private void doClearDatabase(final Context context) {

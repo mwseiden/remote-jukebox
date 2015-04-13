@@ -11,6 +11,17 @@
 
     </PreferenceScreen>
 
+    <PreferenceScreen
+        android:key="whitelist_picker"
+        android:summary="Nothing Selected"
+        android:title="Allowed Genres">
+
+        <intent
+            android:action="jukebox.pick.tags"
+            />
+
+    </PreferenceScreen>
+
     <Preference
         android:key="refresh_db"
         android:summary="Synchronizes the database with the file system"

@@ -75,14 +75,14 @@ public class MusicDatabase extends SQLiteOpenHelper {
     private static final String TAG_TABLE_CREATE =
             "CREATE TABLE " + TAG_TABLE_NAME + " (" +
                     "id INTEGER PRIMARY KEY, " +
-                    "name TEXT;";
+                    "name TEXT);";
 
     private static final String TAG_SONG_TABLE_CREATE =
             "CREATE TABLE " + TAG_SONG_TABLE_NAME + " (" +
                     "id INTEGER PRIMARY KEY, " +
                     "tag_id INTEGER, " +
                     "song_id INTEGER, " +
-                    "FOREIGN KEY(tag_id) REFERENCES " + TAG_TABLE_NAME + "(id)), " +
+                    "FOREIGN KEY(tag_id) REFERENCES " + TAG_TABLE_NAME + "(id), " +
                     "FOREIGN KEY(song_id) REFERENCES " + SONG_TABLE_NAME + "(id));";
 
     private List<Artist> artists;
@@ -90,7 +90,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
     private Map<String, Artist> artistIndex;
     private Map<Integer, Song> songIndex;
 
-    private Map<String, List<Song>> tags;
+    private LinkedHashMap<String, List<Song>> tags;
 
     private static volatile MusicDatabase instance;
 
@@ -138,6 +138,8 @@ public class MusicDatabase extends SQLiteOpenHelper {
     public Artist getArtist(String name) {
         return artistIndex.get(name);
     }
+
+    public LinkedHashMap<String, List<Song>> getTags() { return tags; }
 
     public void synchronizeWithFileSystem(String path, AsyncProgress asyncProgress) {
         clearDatabase(asyncProgress);
