@@ -19,10 +19,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class MusicDatabase extends SQLiteOpenHelper {
 
@@ -82,9 +84,12 @@ public class MusicDatabase extends SQLiteOpenHelper {
                     "FOREIGN KEY(song_id) REFERENCES " + SONG_TABLE_NAME + "(id));";
 
     private List<Artist> artists;
+    private List<Artist> filteredArtists;
 
     private Map<String, Artist> artistIndex;
+    private Map<String, Artist> filteredArtistIndex;
     private Map<Integer, Song> songIndex;
+    private Map<Integer, Song> filteredSongIndex;
 
     private LinkedHashMap<String, List<Song>> tags;
 
@@ -128,11 +133,11 @@ public class MusicDatabase extends SQLiteOpenHelper {
     }
 
     public List<Artist> getArtists() {
-        return artists;
+        return filteredArtists == null ? artists : filteredArtists;
     }
 
     public Artist getArtist(String name) {
-        return artistIndex.get(name);
+        return filteredArtistIndex == null ? artistIndex.get(name) : filteredArtistIndex.get(name);
     }
 
     public LinkedHashMap<String, List<Song>> getTags() { return tags; }
@@ -180,7 +185,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                Song song = songIndex.get(cursor.getInt(0));
+                Song song = getSongIndex().get(cursor.getInt(0));
 
                 if (song != null) queue.add(song);
 
@@ -198,8 +203,73 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
     public Song getRandomSong() {
         Random random = new Random();
-        Object[] songs = songIndex.values().toArray();
+        Object[] songs = getSongIndex().values().toArray();
         return songs.length > 0 ? (Song)songs[random.nextInt(songs.length)] : null;
+    }
+
+    public void filter(String tagList) {
+        if (tagList == null || tagList.equals("")) {
+            filteredArtists = null;
+            filteredArtistIndex = null;
+            filteredSongIndex = null;
+        } else {
+            String[] filtered = tagList.split(";");
+
+            Set<Song> filteredSongs = new HashSet<>();
+
+            for (String tag: filtered) {
+                List<Song> songs = tags.get(tag);
+
+                if (songs != null) filteredSongs.addAll(songs);
+            }
+
+            filteredArtists = new ArrayList<>();
+            filteredArtistIndex = new HashMap<>();
+            filteredSongIndex = new HashMap<>();
+
+            for (Song song : filteredSongs) {
+                Album songAlbum = song.getAlbum();
+                Artist songArtist = songAlbum.getArtist();
+                Artist artist = getArtist(songArtist.getName());
+
+                if (artist == null) {
+                    artist = new Artist();
+                    artist.setId(songArtist.getId());
+                    artist.setName(songArtist.getName());
+
+                    filteredArtists.add(artist);
+                    filteredArtistIndex.put(artist.getName(), artist);
+                }
+
+                Album album = artist.getAlbum(song.getAlbum().getName());
+
+                if (album == null) {
+                    album = new Album();
+
+                    album.setId(songAlbum.getId());
+                    album.setName(songAlbum.getName());
+                    album.setArtist(artist);
+
+                    artist.getAlbums().add(album);
+                }
+
+                Song filteredSong = new Song();
+                filteredSong.setId(song.getId());
+                filteredSong.setName(song.getName());
+                filteredSong.setSequence(song.getSequence());
+                filteredSong.setFileName(song.getFileName());
+                filteredSong.setAlbum(album);
+
+                album.getSongs().add(filteredSong);
+                filteredSongIndex.put(filteredSong.getId(), filteredSong);
+            }
+
+            sort(null);
+        }
+    }
+
+    private Map<Integer, Song> getSongIndex() {
+        return filteredSongIndex == null ? songIndex : filteredSongIndex;
     }
 
     private void reloadDatabase() {
@@ -207,6 +277,9 @@ public class MusicDatabase extends SQLiteOpenHelper {
         artistIndex = new HashMap<>();
         songIndex = new HashMap<>();
         tags = new LinkedHashMap<>();
+        filteredArtists = null;
+        filteredArtistIndex = null;
+        filteredSongIndex = null;
 
         Cursor cursor = getReadableDatabase().rawQuery(
                 "SELECT id, name FROM " + ARTIST_TABLE_NAME + " ORDER BY name",
@@ -421,6 +494,9 @@ public class MusicDatabase extends SQLiteOpenHelper {
         artistIndex.clear();
         songIndex.clear();
         tags.clear();
+        filteredArtists = null;
+        filteredArtistIndex = null;
+        filteredSongIndex = null;
     }
 
     private void rebuildDatabase(String path, AsyncProgress asyncProgress) {
@@ -585,9 +661,9 @@ public class MusicDatabase extends SQLiteOpenHelper {
     }
 
     private void sort(AsyncProgress asyncProgress) {
-        asyncProgress.updateProgress("Sorting");
-        sortNamedItems(artists);
-        for (Artist artist: artists) {
+        if (asyncProgress != null) asyncProgress.updateProgress("Sorting");
+        sortNamedItems(getArtists());
+        for (Artist artist: getArtists()) {
             sortNamedItems(artist.getAlbums());
             for (Album album: artist.getAlbums()) {
                 sortSongs(album.getSongs());
