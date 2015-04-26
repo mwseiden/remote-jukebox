@@ -9,14 +9,10 @@ import com.theducksparadise.jukebox.domain.Album;
 import com.theducksparadise.jukebox.domain.Artist;
 import com.theducksparadise.jukebox.domain.NamedItem;
 import com.theducksparadise.jukebox.domain.Song;
-
-import org.cmc.music.metadata.IMusicMetadata;
-import org.cmc.music.metadata.MusicMetadataSet;
-import org.cmc.music.myid3.MyID3;
+import com.theducksparadise.jukebox.metadata.MetadataRetriever;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,7 +26,7 @@ import java.util.Random;
 
 public class MusicDatabase extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION_001 = 2;
+    //private static final int DATABASE_VERSION_001 = 2;
     private static final int DATABASE_VERSION_002 = 3;
     private static final int DATABASE_VERSION_003 = 4;
     private static final int DATABASE_VERSION = DATABASE_VERSION_003;
@@ -435,14 +431,12 @@ public class MusicDatabase extends SQLiteOpenHelper {
             try {
                 i++;
                 asyncProgress.updateProgress("Processing File " + i + " Of " + files.size());
-                MusicMetadataSet metadataSet = new MyID3().read(file);
-                IMusicMetadata metadata = metadataSet.getSimplified();
+
+                MetadataRetriever metadata = new MetadataRetriever(file);
+
                 String artistName = metadata.getArtist();
                 String albumName = metadata.getAlbum();
                 String songName = metadata.getSongTitle();
-
-                if (artistName == null || artistName.equals("")) artistName = "Unknown Artist";
-                if (albumName == null || albumName.equals("")) albumName = "Unknown Album";
 
                 Artist artist = getArtist(artistName);
 
@@ -462,7 +456,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                     artist.getAlbums().add(album);
                 }
 
-                int sequence = metadata.getTrackNumber() == null ? album.getSongs().size() + 1 : metadata.getTrackNumber().intValue();
+                int sequence = metadata.getTrackNumber() == null ? album.getSongs().size() + 1 : metadata.getTrackNumber();
                 if (songName == null || songName.equals("")) songName = "Track " + sequence;
 
                 Song song = new Song();
@@ -473,11 +467,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 album.getSongs().add(song);
                 songIndex.put(song.getId(), song);
 
-                String genre = metadata.getGenre();
-
-                if (genre == null || genre.equals("")) genre = "Unknown";
-
-                String[] songTags = genre.split(";");
+                String[] songTags = metadata.getTags();
 
                 for (String tag : songTags) {
                     List<Song> taggedSongs = tags.get(tag);
@@ -490,7 +480,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                     taggedSongs.add(song);
                 }
 
-            } catch (IOException | ArrayIndexOutOfBoundsException e) {
+            } catch (ArrayIndexOutOfBoundsException e) {
                 // Well that sucks. Ignore it.
             }
         }
