@@ -30,6 +30,8 @@ public class TagListActivity extends Activity {
 
     private int windowType = 0;
 
+    private String original;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +48,9 @@ public class TagListActivity extends Activity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            tagAdapter.setSelected(extras.getString(SELECTED_TAGS));
+            original = extras.getString(SELECTED_TAGS);
+            filterOriginal();
+            tagAdapter.setSelected(original);
             windowType = extras.getInt(WINDOW_TYPE);
         }
 
@@ -58,9 +62,37 @@ public class TagListActivity extends Activity {
             @Override
             public void onClick(View v) {
                 returnTags(tagAdapter.getSelected());
-                finish();
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+
+        returnTags(original);
+    }
+
+    private void filterOriginal() {
+        String[] originalTags = original.split(";");
+
+        LinkedHashMap<String, List<Song>> tags = MusicDatabase.getInstance(getApplicationContext()).getTags();
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        boolean notFirst = false;
+        for (String selection : originalTags) {
+
+            if (tags.containsKey(selection)) {
+                if (notFirst) stringBuilder.append(";");
+
+                stringBuilder.append(selection);
+
+                notFirst = true;
+            }
+        }
+
+        original = stringBuilder.toString();
     }
 
     private void returnTags(String tags) {
@@ -146,7 +178,7 @@ public class TagListActivity extends Activity {
             selected.clear();
 
             for (String tag : tags) {
-                selected.add(tag);
+                if (!tag.equals("")) selected.add(tag);
             }
         }
 

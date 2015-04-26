@@ -357,7 +357,7 @@ public class SettingsActivity extends PreferenceActivity {
     private void setWhitelist(String tags) {
         whiteListPickerControl.getIntent().putExtra(TagListActivity.SELECTED_TAGS, tags);
         whiteListPickerControl.getIntent().putExtra(TagListActivity.WINDOW_TYPE, WHITELIST_WINDOW);
-        whiteListPickerControl.setSummary(tags);
+        whiteListPickerControl.setSummary(tags == null || tags.equals("") ? "All" : tags);
     }
 
     private void doClearDatabase(final Context context) {
