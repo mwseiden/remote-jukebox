@@ -50,7 +50,7 @@ public class MetadataRetriever {
     public Integer getTrackNumber() {
         String trackNumber = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER);
 
-        if ((trackNumber == null || trackNumber.equals("")) && myMp3Metadata != null) trackNumber = myMp3Metadata.getAlbum();
+        if ((trackNumber == null || trackNumber.equals("")) && myMp3Metadata != null) return myMp3Metadata.getTrackNumber().intValue() > 0 ? myMp3Metadata.getTrackNumber().intValue() : null;
 
         if (trackNumber == null || trackNumber.equals("")) return null;
 
