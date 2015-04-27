@@ -29,6 +29,9 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends PreferenceActivity {
+    public static final String PREFERENCE_FILE = "JukeboxPreferences";
+    public static final String PREFERENCE_KEY_WHITELIST = "whitelist_picker";
+
     /**
      * Determines whether to always show the simplified settings UI, where
      * settings are presented in a single list. When false, settings are shown
@@ -88,7 +91,7 @@ public class SettingsActivity extends PreferenceActivity {
 
         whiteListPickerControl = (PreferenceScreen)findPreference("whitelist_picker");
 
-        setWhitelist(loadStringPreference(whiteListPickerControl.getKey(), ""));
+        setWhitelist(loadStringPreference(PREFERENCE_KEY_WHITELIST, ""));
 
         whiteListPickerControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -103,6 +106,8 @@ public class SettingsActivity extends PreferenceActivity {
         refreshDatabaseControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                setWhitelist("");
+                saveStringPreference(PREFERENCE_KEY_WHITELIST, "");
                 Intent intent = new Intent(getApplicationContext(), RefreshDatabaseWaitActivity.class);
                 intent.putExtra(RefreshDatabaseWaitActivity.PATH, loadStringPreference(filePickerControl.getKey(), null));
                 startActivity(intent);
@@ -330,8 +335,9 @@ public class SettingsActivity extends PreferenceActivity {
             Integer windowType = (Integer)extras.get(TagListActivity.WINDOW_TYPE);
 
             if (windowType == WHITELIST_WINDOW) {
-                saveStringPreference(whiteListPickerControl.getKey(), tags);
+                saveStringPreference(PREFERENCE_KEY_WHITELIST, tags);
                 setWhitelist(tags);
+                MusicDatabase.getInstance(getApplicationContext()).filter(tags);
             } else {
 
             }
@@ -339,14 +345,14 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     private void saveStringPreference(String key, String value) {
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(key, value);
         editor.apply(); // This was .commit() but Intellij thinks it's wrong
     }
 
     private String loadStringPreference(String key, String defaultValue) {
-        return getPreferences(Context.MODE_PRIVATE).getString(key, defaultValue);
+        return getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE).getString(key, defaultValue);
     }
 
     private void setDefaultDirectory(String path) {
@@ -366,6 +372,8 @@ public class SettingsActivity extends PreferenceActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
+                        saveStringPreference(PREFERENCE_KEY_WHITELIST, "");
+                        setWhitelist("");
                         MusicDatabase.getInstance(context).clearDatabase();
                         break;
 

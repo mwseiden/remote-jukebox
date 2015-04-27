@@ -1,6 +1,7 @@
 package com.theducksparadise.jukebox;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,8 +9,6 @@ import android.os.Message;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
-
-import com.theducksparadise.jukebox.domain.Song;
 
 public class SplashActivity extends Activity {
     private static boolean queueLoaded = false;
@@ -43,6 +42,8 @@ public class SplashActivity extends Activity {
                 MusicDatabase musicDatabase = MusicDatabase.getInstance(getApplicationContext());
 
                 if (!queueLoaded) {
+                    String filter = getSharedPreferences(SettingsActivity.PREFERENCE_FILE, Context.MODE_PRIVATE).getString(SettingsActivity.PREFERENCE_KEY_WHITELIST, "");
+                    MusicDatabase.getInstance(getApplicationContext()).filter(filter);
                     JukeboxMedia.getInstance().addToQueue(musicDatabase.loadQueue());
                     queueLoaded = true;
                 }
