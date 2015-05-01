@@ -207,20 +207,34 @@ public class MusicDatabase extends SQLiteOpenHelper {
         return songs.length > 0 ? (Song)songs[random.nextInt(songs.length)] : null;
     }
 
-    public void filter(String tagList) {
-        if (tagList == null || tagList.equals("")) {
+    public void filter(String tagList, String exclusionList) {
+        if ((tagList == null || tagList.equals("")) && (exclusionList == null || exclusionList.equals(""))) {
             filteredArtists = null;
             filteredArtistIndex = null;
             filteredSongIndex = null;
         } else {
-            String[] filtered = tagList.split(";");
-
             Set<Song> filteredSongs = new HashSet<>();
 
-            for (String tag: filtered) {
-                List<Song> songs = tags.get(tag);
+            if (tagList == null || tagList.equals("")) {
+                filteredSongs.addAll(songIndex.values());
+            } else {
+                String[] filtered = tagList.split(";");
 
-                if (songs != null) filteredSongs.addAll(songs);
+                for (String tag : filtered) {
+                    List<Song> songs = tags.get(tag);
+
+                    if (songs != null) filteredSongs.addAll(songs);
+                }
+            }
+
+            if (exclusionList != null && !exclusionList.equals("")) {
+                String[] exclusions = exclusionList.split(";");
+
+                for (String tag : exclusions) {
+                    List<Song> songs = tags.get(tag);
+
+                    if (songs != null) filteredSongs.removeAll(songs);
+                }
             }
 
             filteredArtists = new ArrayList<>();

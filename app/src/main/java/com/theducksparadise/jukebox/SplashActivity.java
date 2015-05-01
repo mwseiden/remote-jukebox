@@ -43,7 +43,8 @@ public class SplashActivity extends Activity {
 
                 if (!queueLoaded) {
                     String filter = getSharedPreferences(SettingsActivity.PREFERENCE_FILE, Context.MODE_PRIVATE).getString(SettingsActivity.PREFERENCE_KEY_WHITELIST, "");
-                    MusicDatabase.getInstance(getApplicationContext()).filter(filter);
+                    String excludes = getSharedPreferences(SettingsActivity.PREFERENCE_FILE, Context.MODE_PRIVATE).getString(SettingsActivity.PREFERENCE_KEY_BLACKLIST, "");
+                    MusicDatabase.getInstance(getApplicationContext()).filter(filter, excludes);
                     JukeboxMedia.getInstance().addToQueue(musicDatabase.loadQueue());
                     queueLoaded = true;
                 }

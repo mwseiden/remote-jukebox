@@ -31,6 +31,7 @@ import java.util.List;
 public class SettingsActivity extends PreferenceActivity {
     public static final String PREFERENCE_FILE = "JukeboxPreferences";
     public static final String PREFERENCE_KEY_WHITELIST = "whitelist_picker";
+    public static final String PREFERENCE_KEY_BLACKLIST = "blacklist_picker";
 
     /**
      * Determines whether to always show the simplified settings UI, where
@@ -49,6 +50,8 @@ public class SettingsActivity extends PreferenceActivity {
     private Preference clearDatabaseControl;
 
     private PreferenceScreen whiteListPickerControl;
+
+    private PreferenceScreen blackListPickerControl;
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -89,11 +92,23 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
 
-        whiteListPickerControl = (PreferenceScreen)findPreference("whitelist_picker");
+        whiteListPickerControl = (PreferenceScreen)findPreference(PREFERENCE_KEY_WHITELIST);
 
         setWhitelist(loadStringPreference(PREFERENCE_KEY_WHITELIST, ""));
 
         whiteListPickerControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                startActivityForResult(preference.getIntent(), TagListActivity.PICK_TAGS);
+                return true;
+            }
+        });
+
+        blackListPickerControl = (PreferenceScreen)findPreference(PREFERENCE_KEY_BLACKLIST);
+
+        setBlacklist(loadStringPreference(PREFERENCE_KEY_BLACKLIST, ""));
+
+        blackListPickerControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 startActivityForResult(preference.getIntent(), TagListActivity.PICK_TAGS);
@@ -337,9 +352,11 @@ public class SettingsActivity extends PreferenceActivity {
             if (windowType == WHITELIST_WINDOW) {
                 saveStringPreference(PREFERENCE_KEY_WHITELIST, tags);
                 setWhitelist(tags);
-                MusicDatabase.getInstance(getApplicationContext()).filter(tags);
-            } else {
-
+                MusicDatabase.getInstance(getApplicationContext()).filter(tags, loadStringPreference(PREFERENCE_KEY_BLACKLIST, ""));
+            } else if (windowType == BLACKLIST_WINDOW) {
+                saveStringPreference(PREFERENCE_KEY_BLACKLIST, tags);
+                setBlacklist(tags);
+                MusicDatabase.getInstance(getApplicationContext()).filter(loadStringPreference(PREFERENCE_KEY_WHITELIST, ""), tags);
             }
         }
     }
@@ -364,6 +381,12 @@ public class SettingsActivity extends PreferenceActivity {
         whiteListPickerControl.getIntent().putExtra(TagListActivity.SELECTED_TAGS, tags);
         whiteListPickerControl.getIntent().putExtra(TagListActivity.WINDOW_TYPE, WHITELIST_WINDOW);
         whiteListPickerControl.setSummary(tags == null || tags.equals("") ? "All" : tags);
+    }
+
+    private void setBlacklist(String tags) {
+        blackListPickerControl.getIntent().putExtra(TagListActivity.SELECTED_TAGS, tags);
+        blackListPickerControl.getIntent().putExtra(TagListActivity.WINDOW_TYPE, BLACKLIST_WINDOW);
+        blackListPickerControl.setSummary(tags == null || tags.equals("") ? "None" : tags);
     }
 
     private void doClearDatabase(final Context context) {
