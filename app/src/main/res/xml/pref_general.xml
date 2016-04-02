@@ -32,6 +32,30 @@
             />
     </PreferenceScreen>
 
+    <CheckBoxPreference
+        android:key="twitch_enable"
+        android:summary="Enable Twitch Bot"
+        android:title="Twitch Bot Enabled"
+    />
+
+    <EditTextPreference
+        android:key="twitch_account"
+        android:summary=""
+        android:title="Twitch Account"
+    />
+
+    <EditTextPreference
+        android:key="twitch_password"
+        android:summary=""
+        android:title="Twitch Password"
+    />
+
+    <EditTextPreference
+        android:key="twitch_channel"
+        android:summary=""
+        android:title="Twitch Channel"
+        />
+
     <Preference
         android:key="refresh_db"
         android:summary="Synchronizes the database with the file system"
@@ -42,6 +66,6 @@
         android:key="clear_db"
         android:summary="Wipes out the entire music database"
         android:title="Clear Database"
-        />
+    />
 
 </PreferenceScreen>

@@ -140,6 +140,18 @@ public class MusicDatabase extends SQLiteOpenHelper {
         return filteredArtistIndex == null ? artistIndex.get(name) : filteredArtistIndex.get(name);
     }
 
+    public Artist getArtistCaseInsensitive(String name) {
+        return searchInsensitive(name, filteredArtistIndex == null ? artistIndex : filteredArtistIndex);
+    }
+
+    private Artist searchInsensitive(String name, Map<String, Artist> list) {
+        for (Map.Entry<String, Artist> entry : list.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(name)) return entry.getValue();
+        }
+
+        return null;
+    }
+
     public LinkedHashMap<String, List<Song>> getTags() { return tags; }
 
     public void synchronizeWithFileSystem(String path, AsyncProgress asyncProgress) {

@@ -88,6 +88,8 @@ public class Jukebox extends Activity {
         JukeboxMedia.getInstance().setHandler(handler);
         handler.postDelayed(new SliderThread(handler), SLIDER_UPDATE_TIME);
 
+        TwitchBot.getInstance(getApplicationContext()).setHandler(new Handler());
+
         Intent intent = new Intent(getApplicationContext(), SplashActivity.class);
         startActivity(intent);
 
