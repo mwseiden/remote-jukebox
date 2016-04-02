@@ -84,6 +84,7 @@ public class SplashActivity extends Activity {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == FINISH_MESSAGE) {
+                activity.setResult(FINISH_MESSAGE);
                 activity.finish();
             }
             super.handleMessage(msg);

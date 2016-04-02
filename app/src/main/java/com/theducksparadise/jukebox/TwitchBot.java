@@ -104,22 +104,21 @@ public class TwitchBot extends ListenerAdapter {
             runnable = new Runnable() {
                 @Override
                 public void run() {
+                    int delay = 5000;
+
                     synchronized (TwitchBot.class) {
                         if (bot != null) {
                             if (messages.size() > 0) {
-                                String chat = "";
-                                for (String message : messages) chat += message + " ";
-                                try {
-                                    bot.send().message("#" + channel, chat);
-                                } catch (Exception e) {
-                                    // not good
-                                }
+                                String message = messages.get(0);
+                                bot.send().message("#" + channel, message);
+                                messages.remove(0);
                             }
-                            messages.clear();
+
+                            if (messages.size() > 0) delay = 2000;
                         }
                     }
 
-                    handler.postDelayed(this, 5000);
+                    handler.postDelayed(this, delay);
                 }
             };
         } else {
@@ -177,7 +176,15 @@ public class TwitchBot extends ListenerAdapter {
             Song song = JukeboxMedia.getInstance().getCurrentSong();
 
             if (song != null) {
-                addMessage("We are now listening to " + song.getName() + " by " + song.getAlbum().getArtist().getName() + " matey!");
+                addMessage("We are now listening to " + song.getName() + " by " + song.getAlbum().getArtist().getName() + ", matey!");
+            } else {
+                addMessage("Nothing is playing, ye scurvy landlubber!");
+            }
+        } else if (message.equalsIgnoreCase("?album")) {
+            Song song = JukeboxMedia.getInstance().getCurrentSong();
+
+            if (song != null) {
+                addMessage("This song by " + song.getAlbum().getArtist().getName() + " is on the " + song.getAlbum().getName() + " album, matey!");
             } else {
                 addMessage("Nothing is playing, ye scurvy landlubber!");
             }
@@ -191,7 +198,7 @@ public class TwitchBot extends ListenerAdapter {
 
     private void addMessage(String message) {
         synchronized (TwitchBot.class) {
-            messages.add(message);
+            if (!messages.contains(message)) messages.add(message);
         }
     }
 }
