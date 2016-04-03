@@ -38,6 +38,8 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String PREFERENCE_KEY_TWITCH_ACCOUNT = "twitch_account";
     public static final String PREFERENCE_KEY_TWITCH_PASSWORD = "twitch_password";
     public static final String PREFERENCE_KEY_TWITCH_CHANNEL = "twitch_channel";
+    public static final String PREFERENCE_KEY_TWITCH_REQUEST_LIMIT = "twitch_request_limit";
+    public static final String PREFERENCE_KEY_TWITCH_REQUEST_ALL = "twitch_request_all";
 
     /**
      * Determines whether to always show the simplified settings UI, where
@@ -62,6 +64,10 @@ public class SettingsActivity extends PreferenceActivity {
     private EditTextPreference twitchPasswordControl;
 
     private EditTextPreference twitchChannelControl;
+
+    private EditTextPreference twitchRequestLimitControl;
+
+    private CheckBoxPreference twitchRequestAllControl;
 
     private PreferenceScreen whiteListPickerControl;
 
@@ -145,16 +151,7 @@ public class SettingsActivity extends PreferenceActivity {
         });
 
         twitchBotEnabledControl = (CheckBoxPreference)findPreference("twitch_enable");
-        twitchBotEnabledControl.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                SharedPreferences sharedPref = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putBoolean(PREFERENCE_KEY_TWITCH_ENABLED, (Boolean)newValue);
-                editor.apply();
-                return true;
-            }
-        });
+        initializeBooleanControl(twitchBotEnabledControl, PREFERENCE_KEY_TWITCH_ENABLED);
 
         twitchUserControl = (EditTextPreference)findPreference("twitch_account");
         initializeTextControl(twitchUserControl, PREFERENCE_KEY_TWITCH_ACCOUNT);
@@ -164,6 +161,12 @@ public class SettingsActivity extends PreferenceActivity {
 
         twitchChannelControl = (EditTextPreference)findPreference("twitch_channel");
         initializeTextControl(twitchChannelControl, PREFERENCE_KEY_TWITCH_CHANNEL);
+
+        twitchRequestAllControl = (CheckBoxPreference)findPreference("twitch_request_all");
+        initializeBooleanControl(twitchRequestAllControl, PREFERENCE_KEY_TWITCH_REQUEST_ALL);
+
+        twitchRequestLimitControl = (EditTextPreference)findPreference("twitch_request_limit");
+        initializeNumericControl(twitchRequestLimitControl, PREFERENCE_KEY_TWITCH_REQUEST_LIMIT, 300);
 
     }
 
@@ -177,6 +180,37 @@ public class SettingsActivity extends PreferenceActivity {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 saveStringPreference(key, newValue.toString());
                 control.setSummary(newValue.toString());
+                return true;
+            }
+        });
+    }
+
+    private void initializeNumericControl(final EditTextPreference control, final String key, int defaultValue) {
+        final int value = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE).getInt(key, defaultValue);
+        control.setDefaultValue(value);
+        control.setSummary(value);
+
+        control.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                SharedPreferences sharedPref = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt(key, Integer.valueOf(newValue.toString()));
+                editor.apply();
+                control.setSummary(newValue.toString());
+                return true;
+            }
+        });
+    }
+
+    private void initializeBooleanControl(final CheckBoxPreference control, final String key) {
+        control.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                SharedPreferences sharedPref = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(key, (Boolean)newValue);
+                editor.apply();
                 return true;
             }
         });

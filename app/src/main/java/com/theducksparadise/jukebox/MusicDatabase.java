@@ -140,8 +140,8 @@ public class MusicDatabase extends SQLiteOpenHelper {
         return filteredArtistIndex == null ? artistIndex.get(name) : filteredArtistIndex.get(name);
     }
 
-    public Artist getArtistCaseInsensitive(String name) {
-        return searchInsensitive(name, filteredArtistIndex == null ? artistIndex : filteredArtistIndex);
+    public Artist getArtistCaseInsensitive(String name, boolean filter) {
+        return searchInsensitive(name, (filteredArtistIndex == null || !filter) ? artistIndex : filteredArtistIndex);
     }
 
     private Artist searchInsensitive(String name, Map<String, Artist> list) {
