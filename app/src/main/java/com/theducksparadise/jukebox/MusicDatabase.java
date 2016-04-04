@@ -136,6 +136,10 @@ public class MusicDatabase extends SQLiteOpenHelper {
         return filteredArtists == null ? artists : filteredArtists;
     }
 
+    public List<Artist> getArtists(boolean filtered) {
+        return (filteredArtists == null || !filtered) ? artists : filteredArtists;
+    }
+
     public Artist getArtist(String name) {
         return filteredArtistIndex == null ? artistIndex.get(name) : filteredArtistIndex.get(name);
     }

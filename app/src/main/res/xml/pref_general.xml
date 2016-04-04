@@ -71,6 +71,18 @@
         />
 
     <Preference
+        android:key="copy_playlist"
+        android:summary="Generates a Playlist and Saves to the Clip Board"
+        android:title="Generate Playlist"
+        />
+
+    <EditTextPreference
+        android:key="playlist_url"
+        android:summary=""
+        android:title="URL of Playlist"
+        />
+
+    <Preference
         android:key="refresh_db"
         android:summary="Synchronizes the database with the file system"
         android:title="Refresh database"

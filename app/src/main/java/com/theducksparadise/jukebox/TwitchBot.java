@@ -23,7 +23,7 @@ public class TwitchBot extends ListenerAdapter {
 
     private static final int CYCLES_UNTIL_TALKING = 120;
 
-    private static final String HELP_MESSAGE = "Use commands ?request [BAND] to make a request or ?song to see what's playing.";
+    private static final String HELP_MESSAGE = "Use commands ?request [BAND] to make a request or ?song to see what's playing. Other commands are ?album or ?help";
 
     private static volatile TwitchBot instance;
 
@@ -50,6 +50,8 @@ public class TwitchBot extends ListenerAdapter {
     private int secondsBetweenRequests;
 
     private String requestLimitMessage;
+
+    private String playlistMessage;
 
     public static TwitchBot getInstance(Context context) {
         if (instance == null) {
@@ -86,7 +88,10 @@ public class TwitchBot extends ListenerAdapter {
         if (seconds > 0) {
             requestLimitMessage += seconds.toString() + " second" + (seconds > 1 ? "s " : " ");
         }
-        requestLimitMessage += "per user!";
+        requestLimitMessage += "per crew member!";
+
+        String url = context.getSharedPreferences(SettingsActivity.PREFERENCE_FILE, Context.MODE_PRIVATE).getString(SettingsActivity.PREFERENCE_KEY_PLAYLIST_URL, null);
+        playlistMessage = (url == null || url.equals("")) ? null : ("See the list of available bands at " + url);
 
         if (context.getSharedPreferences(SettingsActivity.PREFERENCE_FILE, Context.MODE_PRIVATE).getBoolean(SettingsActivity.PREFERENCE_KEY_TWITCH_ENABLED, false)) {
 
@@ -144,7 +149,7 @@ public class TwitchBot extends ListenerAdapter {
                             } else {
                                 cyclesWithoutTalking++;
                                 if (cyclesWithoutTalking > CYCLES_UNTIL_TALKING) {
-                                    addMessage(HELP_MESSAGE);
+                                    addHelpMessages();
                                     cyclesWithoutTalking = 0;
                                 }
                             }
@@ -164,7 +169,7 @@ public class TwitchBot extends ListenerAdapter {
     public static void reconfigure(Context context) {
         synchronized (TwitchBot.class) {
             if (instance != null && instance.bot != null) {
-                instance.handler.removeCallbacks(instance.runnable);
+                if (instance.handler != null) instance.handler.removeCallbacks(instance.runnable);
                 instance.bot.stopBotReconnect();
                 instance.bot.close();
             }
@@ -224,13 +229,21 @@ public class TwitchBot extends ListenerAdapter {
             } else {
                 addMessage("Nothing is playing, ye scurvy landlubber!");
             }
+        } else if (message.equalsIgnoreCase("?help")) {
+            cyclesWithoutTalking = 0;
+            addHelpMessages();
         }
     }
 
     @Override
     public void onConnect(ConnectEvent event) throws Exception {
         addMessage("Ahoy Matey! " + accountName + " reporting for sea shanty duty!");
+        addHelpMessages();
+    }
+
+    private void addHelpMessages() {
         addMessage(HELP_MESSAGE);
+        if (playlistMessage != null) addMessage(playlistMessage);
     }
 
     private void addMessage(String message) {

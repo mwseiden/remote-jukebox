@@ -2,6 +2,8 @@ package com.theducksparadise.jukebox;
 
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,6 +11,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -16,6 +19,8 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+
+import com.theducksparadise.jukebox.domain.Artist;
 
 import java.util.List;
 
@@ -40,6 +45,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String PREFERENCE_KEY_TWITCH_CHANNEL = "twitch_channel";
     public static final String PREFERENCE_KEY_TWITCH_REQUEST_LIMIT = "twitch_request_limit";
     public static final String PREFERENCE_KEY_TWITCH_REQUEST_ALL = "twitch_request_all";
+    public static final String PREFERENCE_KEY_PLAYLIST_URL = "playlist_url";
 
     /**
      * Determines whether to always show the simplified settings UI, where
@@ -68,6 +74,10 @@ public class SettingsActivity extends PreferenceActivity {
     private EditTextPreference twitchRequestLimitControl;
 
     private CheckBoxPreference twitchRequestAllControl;
+
+    private EditTextPreference playlistUrlControl;
+
+    private Preference copyPlaylistControl;
 
     private PreferenceScreen whiteListPickerControl;
 
@@ -168,6 +178,17 @@ public class SettingsActivity extends PreferenceActivity {
         twitchRequestLimitControl = (EditTextPreference)findPreference("twitch_request_limit");
         initializeNumericControl(twitchRequestLimitControl, PREFERENCE_KEY_TWITCH_REQUEST_LIMIT, 300);
 
+        playlistUrlControl = (EditTextPreference)findPreference("playlist_url");
+        initializeTextControl(playlistUrlControl, PREFERENCE_KEY_PLAYLIST_URL);
+
+        copyPlaylistControl = findPreference("copy_playlist");
+        copyPlaylistControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                copyPlaylist();
+                return true;
+            }
+        });
     }
 
     private void initializeTextControl(final EditTextPreference control, final String key) {
@@ -186,9 +207,9 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     private void initializeNumericControl(final EditTextPreference control, final String key, int defaultValue) {
-        final int value = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE).getInt(key, defaultValue);
+        final Integer value = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE).getInt(key, defaultValue);
         control.setDefaultValue(value);
-        control.setSummary(value);
+        control.setSummary(value.toString());
 
         control.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -376,6 +397,7 @@ public class SettingsActivity extends PreferenceActivity {
         super.onDestroy();
 
         TwitchBot.reconfigure(getApplicationContext());
+        TwitchBot.getInstance(getApplicationContext()).setHandler(new Handler());
     }
 
     private void saveStringPreference(String key, String value) {
@@ -427,5 +449,19 @@ public class SettingsActivity extends PreferenceActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener).show();
+    }
+
+    private void copyPlaylist() {
+        boolean filtered = !getSharedPreferences(SettingsActivity.PREFERENCE_FILE, Context.MODE_PRIVATE).getBoolean(SettingsActivity.PREFERENCE_KEY_TWITCH_REQUEST_ALL, false);
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        for (Artist artist : MusicDatabase.getInstance(getApplicationContext()).getArtists(filtered)) {
+            stringBuilder.append(artist.getName());
+            stringBuilder.append("\n");
+        }
+
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("jukebox_playlist", stringBuilder.toString());
+        clipboard.setPrimaryClip(clip);
     }
 }
