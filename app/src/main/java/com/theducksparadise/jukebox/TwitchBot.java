@@ -21,9 +21,9 @@ import java.util.Map;
 
 public class TwitchBot extends ListenerAdapter {
 
-    private static final int CYCLES_UNTIL_TALKING = 120;
+    private static final int CYCLES_UNTIL_TALKING = 360;
 
-    private static final String HELP_MESSAGE = "Use commands ?request [BAND] to make a request or ?song to see what's playing. Other commands are ?album or ?help";
+    private static final String HELP_MESSAGE = "Use commands ?request [BAND/SONG/GENRE] to make a request or ?song to see what's playing. Other commands are ?album or ?help";
 
     private static volatile TwitchBot instance;
 
@@ -53,6 +53,8 @@ public class TwitchBot extends ListenerAdapter {
 
     private String playlistMessage;
 
+    private List<Song> previousRequests;
+
     public static TwitchBot getInstance(Context context) {
         if (instance == null) {
             synchronized (TwitchBot.class) {
@@ -73,6 +75,7 @@ public class TwitchBot extends ListenerAdapter {
         }
 
         userRequests = new HashMap<>();
+        previousRequests = new ArrayList<>();
 
         cyclesWithoutTalking = 0;
 
@@ -199,13 +202,24 @@ public class TwitchBot extends ListenerAdapter {
                     Artist artist = MusicDatabase.getInstance(context).getArtistCaseInsensitive(band, !allowAllRequests);
                     if (artist != null) {
                         ArrayList<Song> songs = (ArrayList<Song>) artist.getSongsForQueue();
-                        List<Song> requestedSong = new ArrayList<>();
-                        requestedSong.add(songs.get((int) (Math.random() * songs.size())));
-                        JukeboxMedia.getInstance().addToQueue(requestedSong);
-                        addMessage("Queued " + requestedSong.get(0).getName() + " by " + requestedSong.get(0).getAlbum().getArtist().getName() + " for " + event.getUser().getNick());
-                        userRequests.put(event.getUser().getNick(), new Date());
+                        int index = (int) (Math.random() * songs.size());
+
+                        Song song = songs.get((int) (Math.random() * songs.size()));
+                        if (previousRequests.contains(song)) song = chooseDifferentSong(songs, index);
+
+                        if (song != null) {
+                            List<Song> requestedSong = new ArrayList<>();
+                            requestedSong.add(song);
+                            JukeboxMedia.getInstance().addToQueue(requestedSong);
+                            addMessage("Queued " + requestedSong.get(0).getName() + " by " + requestedSong.get(0).getAlbum().getArtist().getName() + " for " + event.getUser().getNick());
+                            userRequests.put(event.getUser().getNick(), new Date());
+                            previousRequests.add(song);
+                            if (previousRequests.size() > 10) previousRequests.remove(0);
+                        } else {
+                            addMessage("Ye can't request the same song until 10 other requests are run through me hornpipe!");
+                        }
                     } else {
-                        addMessage("We don't have anything by " + band);
+                        addMessage("We don't have anything by " + band + "." + (playlistMessage == null ? "" : (" " + playlistMessage)));
                     }
                 } else {
                     addMessage(requestLimitMessage);
@@ -250,5 +264,22 @@ public class TwitchBot extends ListenerAdapter {
         synchronized (TwitchBot.class) {
             if (!messages.contains(message)) messages.add(message);
         }
+    }
+
+    private Song chooseDifferentSong(List<Song> songs, int index) {
+        int newIndex = index;
+
+        do {
+            newIndex++;
+
+            if (newIndex >= songs.size()) newIndex = 0;
+
+            Song newSong = songs.get(newIndex);
+
+            if (!previousRequests.contains(newSong)) return newSong;
+
+        } while (index != newIndex);
+
+        return null;
     }
 }
