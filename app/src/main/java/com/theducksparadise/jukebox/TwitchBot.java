@@ -23,7 +23,7 @@ public class TwitchBot extends ListenerAdapter {
 
     private static final int CYCLES_UNTIL_TALKING = 360;
 
-    private static final String HELP_MESSAGE = "Use commands ?request [BAND/SONG/GENRE] to make a request or ?song to see what's playing. Other commands are ?album or ?help.";
+    private static final String HELP_MESSAGE = "Use commands ?request [BAND/SONG/GENRE] to make a request or ?song to see what's playing. Other commands are ?album or ?help. You can also pick a specific song with ?request [SONG] ?by [BAND]";
 
     private static volatile TwitchBot instance;
 
@@ -190,6 +190,10 @@ public class TwitchBot extends ListenerAdapter {
     public void onMessage(MessageEvent event) throws Exception {
         super.onMessage(event);
 
+        boolean fromModerator = event.getChannel() != null &&
+                event.getUser() != null &&
+                event.getChannel().isOp(event.getUser());
+
         String message = event.getMessage();
         if (message.toLowerCase().startsWith("?request ")) {
             onRequest(event, event.getMessage().substring(9).trim());
@@ -200,7 +204,29 @@ public class TwitchBot extends ListenerAdapter {
         } else if (message.equalsIgnoreCase("?help")) {
             cyclesWithoutTalking = 0;
             addHelpMessages();
+        } else if (fromModerator) {
+            if (message.equalsIgnoreCase("?next")) {
+                onNext(event);
+            } else if (message.equalsIgnoreCase("?clear")) {
+                onClear(event);
+            }
         }
+    }
+
+    private void onClear(MessageEvent event) {
+        if (event.getUser() == null) return;
+
+        JukeboxMedia.getInstance().clearQueue();
+
+        addMessage("Cleared queue on behalf of " + event.getUser().getNick());
+    }
+
+    private void onNext(MessageEvent event) {
+        if (event.getUser() == null) return;
+
+        JukeboxMedia.getInstance().skip();
+
+        addMessage("Skipped song on behalf of " + event.getUser().getNick());
     }
 
     private void onAlbum() {
@@ -300,7 +326,8 @@ public class TwitchBot extends ListenerAdapter {
         int index = (int) (Math.random() * songs.size());
 
         Song song = songs.get((int) (Math.random() * songs.size()));
-        if (previousRequests.contains(song) || JukeboxMedia.getInstance().getQueue().contains(song)) song = chooseDifferentSong(songs, index);
+
+        if (isIneligible(song)) song = chooseDifferentSong(songs, index);
 
         if (song != null) {
             List<Song> requestedSong = new ArrayList<>();
@@ -319,6 +346,12 @@ public class TwitchBot extends ListenerAdapter {
     public void onConnect(ConnectEvent event) throws Exception {
         addMessage("Ahoy Matey! " + accountName + " reporting for sea shanty duty!");
         addHelpMessages();
+    }
+
+    private boolean isIneligible(Song song) {
+        return  song != null && (previousRequests.contains(song) ||
+                JukeboxMedia.getInstance().getQueue().contains(song) ||
+                song.equals(JukeboxMedia.getInstance().getCurrentSong()));
     }
 
     private void addHelpMessages() {
@@ -342,7 +375,7 @@ public class TwitchBot extends ListenerAdapter {
 
             Song newSong = songs.get(newIndex);
 
-            if (!previousRequests.contains(newSong)) return newSong;
+            if (!isIneligible(newSong)) return newSong;
 
         } while (index != newIndex);
 

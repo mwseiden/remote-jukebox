@@ -201,7 +201,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                Song song = getSongIndex().get(cursor.getInt(0));
+                Song song = getSongIndex(false).get(cursor.getInt(0));
 
                 if (song != null) queue.add(song);
 

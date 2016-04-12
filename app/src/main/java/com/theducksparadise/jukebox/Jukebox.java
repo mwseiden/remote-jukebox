@@ -199,8 +199,15 @@ public class Jukebox extends Activity {
     private void updateSlider() {
         SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
 
-        Integer duration = JukeboxMedia.getInstance().getDuration();
-        Integer progress = JukeboxMedia.getInstance().getProgress();
+        Integer duration = null;
+        Integer progress = null;
+
+        try {
+            duration = JukeboxMedia.getInstance().getDuration();
+            progress = JukeboxMedia.getInstance().getProgress();
+        } catch (Exception e) {
+            // not good but it happens with an IllegalStateException
+        }
 
         if (duration != null && progress != null) {
             seekBar.setVisibility(View.VISIBLE);
