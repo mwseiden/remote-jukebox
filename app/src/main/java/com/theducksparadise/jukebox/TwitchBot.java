@@ -247,7 +247,12 @@ public class TwitchBot extends ListenerAdapter {
                     songs = (ArrayList<Song>) MusicDatabase.getInstance(context).findSong(request, !allowAllRequests);
 
                     if (songs == null || songs.size() == 0) {
-                        songs = (ArrayList<Song>) MusicDatabase.getInstance(context).getTags().get(request);
+                        for (Map.Entry<String, List<Song>> entry : MusicDatabase.getInstance(context).getTags().entrySet()) {
+                            if (entry.getKey().toLowerCase().equals(request.toLowerCase())) {
+                                songs = (ArrayList<Song>) entry.getValue();
+                                break;
+                            }
+                        }
                     }
                 }
 
