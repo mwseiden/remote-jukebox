@@ -23,7 +23,7 @@ public class TwitchBot extends ListenerAdapter {
 
     private static final int CYCLES_UNTIL_TALKING = 360;
 
-    private static final String HELP_MESSAGE = "Use commands ?request [BAND/SONG/GENRE] to make a request or ?song to see what's playing. Other commands are ?album or ?help";
+    private static final String HELP_MESSAGE = "Use commands ?request [BAND/SONG/GENRE] to make a request or ?song to see what's playing. Other commands are ?album or ?help.";
 
     private static volatile TwitchBot instance;
 
@@ -190,62 +190,123 @@ public class TwitchBot extends ListenerAdapter {
     public void onMessage(MessageEvent event) throws Exception {
         super.onMessage(event);
 
-        if (event.getUser() == null) return;
-
         String message = event.getMessage();
         if (message.toLowerCase().startsWith("?request ")) {
-            try {
-                Date lastRequest = userRequests.get(event.getUser().getNick());
-
-                if (lastRequest == null || lastRequest.getTime() < new Date().getTime() - (1000 * secondsBetweenRequests)) {
-                    String band = message.substring(9).trim();
-                    Artist artist = MusicDatabase.getInstance(context).getArtistCaseInsensitive(band, !allowAllRequests);
-                    if (artist != null) {
-                        ArrayList<Song> songs = (ArrayList<Song>) artist.getSongsForQueue();
-                        int index = (int) (Math.random() * songs.size());
-
-                        Song song = songs.get((int) (Math.random() * songs.size()));
-                        if (previousRequests.contains(song)) song = chooseDifferentSong(songs, index);
-
-                        if (song != null) {
-                            List<Song> requestedSong = new ArrayList<>();
-                            requestedSong.add(song);
-                            JukeboxMedia.getInstance().addToQueue(requestedSong);
-                            addMessage("Queued " + requestedSong.get(0).getName() + " by " + requestedSong.get(0).getAlbum().getArtist().getName() + " for " + event.getUser().getNick());
-                            userRequests.put(event.getUser().getNick(), new Date());
-                            previousRequests.add(song);
-                            if (previousRequests.size() > 10) previousRequests.remove(0);
-                        } else {
-                            addMessage("Ye can't request the same song until 10 other requests are run through me hornpipe!");
-                        }
-                    } else {
-                        addMessage("We don't have anything by " + band + "." + (playlistMessage == null ? "" : (" " + playlistMessage)));
-                    }
-                } else {
-                    addMessage(requestLimitMessage);
-                }
-            } catch (Exception e) {
-                // dat is bad
-            }
+            onRequest(event, event.getMessage().substring(9).trim());
         } else if (message.equalsIgnoreCase("?song")) {
-            Song song = JukeboxMedia.getInstance().getCurrentSong();
-
-            if (song != null) {
-                addMessage("We are now listening to " + song.getName() + " by " + song.getAlbum().getArtist().getName() + ", matey!");
-            } else {
-                addMessage("Nothing is playing, ye scurvy landlubber!");
-            }
+            onSong();
         } else if (message.equalsIgnoreCase("?album")) {
-            Song song = JukeboxMedia.getInstance().getCurrentSong();
-
-            if (song != null) {
-                addMessage("This song by " + song.getAlbum().getArtist().getName() + " is on the " + song.getAlbum().getName() + " album, matey!");
-            } else {
-                addMessage("Nothing is playing, ye scurvy landlubber!");
-            }
+            onAlbum();
         } else if (message.equalsIgnoreCase("?help")) {
             cyclesWithoutTalking = 0;
             addHelpMessages();
+        }
+    }
+
+    private void onAlbum() {
+        Song song = JukeboxMedia.getInstance().getCurrentSong();
+
+        if (song != null) {
+            addMessage("This song by " + song.getAlbum().getArtist().getName() + " is on the " + song.getAlbum().getName() + " album, matey!");
+        } else {
+            addMessage("Nothing is playing, ye scurvy landlubber!");
+        }
+    }
+
+    private void onSong() {
+        Song song = JukeboxMedia.getInstance().getCurrentSong();
+
+        if (song != null) {
+            addMessage("We are now listening to " + song.getName() + " by " + song.getAlbum().getArtist().getName() + ", matey!");
+        } else {
+            addMessage("Nothing is playing, ye scurvy landlubber!");
+        }
+    }
+
+    private void onRequest(MessageEvent event, String request) {
+        if (event.getUser() == null) return;
+
+        try {
+            Date lastRequest = userRequests.get(event.getUser().getNick());
+
+            if (lastRequest == null || lastRequest.getTime() < new Date().getTime() - (1000 * secondsBetweenRequests)) {
+                if (request.toLowerCase().contains(" ?by ")) {
+                    onRequestBy(event, request);
+                    return;
+                }
+
+                ArrayList<Song> songs = null;
+
+                Artist artist = MusicDatabase.getInstance(context).getArtistCaseInsensitive(request, !allowAllRequests);
+                if (artist != null) {
+                    songs = (ArrayList<Song>) artist.getSongsForQueue();
+                }
+
+                if (songs == null || songs.size() == 0) {
+
+                    songs = (ArrayList<Song>) MusicDatabase.getInstance(context).findSong(request, !allowAllRequests);
+
+                    if (songs == null || songs.size() == 0) {
+                        songs = (ArrayList<Song>) MusicDatabase.getInstance(context).getTags().get(request);
+                    }
+                }
+
+                if (songs != null && songs.size() > 0) {
+                    playRandomSong(event, songs);
+                } else {
+                    addMessage("We don't have anything by " + request + "." + (playlistMessage == null ? "" : (" " + playlistMessage)));
+                }
+            } else {
+                addMessage(requestLimitMessage);
+            }
+        } catch (Exception e) {
+            // dat is bad
+        }
+    }
+
+    private void onRequestBy(MessageEvent event, String request) {
+        String[] requests = request.split(" \\?by ");
+
+        Artist artist = MusicDatabase.getInstance(context).getArtistCaseInsensitive(requests[1].trim(), !allowAllRequests);
+
+        if (artist != null) {
+            ArrayList<Song> songs = new ArrayList<>();
+
+            for (Song song : artist.getSongsForQueue()) {
+                if (song.getName().toLowerCase().equals(requests[0].trim())) {
+                    songs.add(song);
+                }
+            }
+
+            if (songs.size() > 0) {
+                playRandomSong(event, songs);
+            } else {
+                addMessage("We don't have the song " + requests[0].trim() + " by " + requests[1].trim());
+            }
+
+        } else {
+            addMessage("We don't have anything by " + requests[0].trim() + "." + (playlistMessage == null ? "" : (" " + playlistMessage)));
+        }
+    }
+
+    private void playRandomSong(MessageEvent event, ArrayList<Song> songs) {
+        if (event.getUser() == null) return;
+
+        int index = (int) (Math.random() * songs.size());
+
+        Song song = songs.get((int) (Math.random() * songs.size()));
+        if (previousRequests.contains(song) || JukeboxMedia.getInstance().getQueue().contains(song)) song = chooseDifferentSong(songs, index);
+
+        if (song != null) {
+            List<Song> requestedSong = new ArrayList<>();
+            requestedSong.add(song);
+            JukeboxMedia.getInstance().addToQueue(requestedSong);
+            addMessage("Queued " + requestedSong.get(0).getName() + " by " + requestedSong.get(0).getAlbum().getArtist().getName() + " for " + event.getUser().getNick());
+            userRequests.put(event.getUser().getNick(), new Date());
+            previousRequests.add(song);
+            if (previousRequests.size() > 10) previousRequests.remove(0);
+        } else {
+            addMessage("Ye can't request the same song until 10 other requests are run through me hornpipe!");
         }
     }
 
