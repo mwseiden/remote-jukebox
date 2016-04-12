@@ -2,6 +2,8 @@ package com.theducksparadise.jukebox;
 
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,11 +11,16 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+
+import com.theducksparadise.jukebox.domain.Artist;
 
 import java.util.List;
 
@@ -32,6 +39,13 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String PREFERENCE_FILE = "JukeboxPreferences";
     public static final String PREFERENCE_KEY_WHITELIST = "whitelist_picker";
     public static final String PREFERENCE_KEY_BLACKLIST = "blacklist_picker";
+    public static final String PREFERENCE_KEY_TWITCH_ENABLED = "twitch_enabled";
+    public static final String PREFERENCE_KEY_TWITCH_ACCOUNT = "twitch_account";
+    public static final String PREFERENCE_KEY_TWITCH_PASSWORD = "twitch_password";
+    public static final String PREFERENCE_KEY_TWITCH_CHANNEL = "twitch_channel";
+    public static final String PREFERENCE_KEY_TWITCH_REQUEST_LIMIT = "twitch_request_limit";
+    public static final String PREFERENCE_KEY_TWITCH_REQUEST_ALL = "twitch_request_all";
+    public static final String PREFERENCE_KEY_PLAYLIST_URL = "playlist_url";
 
     /**
      * Determines whether to always show the simplified settings UI, where
@@ -48,6 +62,22 @@ public class SettingsActivity extends PreferenceActivity {
     private Preference refreshDatabaseControl;
 
     private Preference clearDatabaseControl;
+
+    private CheckBoxPreference twitchBotEnabledControl;
+
+    private EditTextPreference twitchUserControl;
+
+    private EditTextPreference twitchPasswordControl;
+
+    private EditTextPreference twitchChannelControl;
+
+    private EditTextPreference twitchRequestLimitControl;
+
+    private CheckBoxPreference twitchRequestAllControl;
+
+    private EditTextPreference playlistUrlControl;
+
+    private Preference copyPlaylistControl;
 
     private PreferenceScreen whiteListPickerControl;
 
@@ -66,16 +96,6 @@ public class SettingsActivity extends PreferenceActivity {
      * shown.
      */
     private void setupSimplePreferencesScreen() {
-        /*
-        if (!isSimplePreferences(this)) {
-            return;
-        }
-        */
-
-        // In the simplified UI, fragments are not used at all and we instead
-        // use the older PreferenceActivity APIs.
-
-        // Add 'general' preferences.
         addPreferencesFromResource(R.xml.pref_general);
 
         filePickerControl = (PreferenceScreen)findPreference("file_picker");
@@ -140,27 +160,81 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
 
-        /*
-        // Add 'notifications' preferences, and a corresponding header.
-        PreferenceCategory fakeHeader = new PreferenceCategory(this);
-        fakeHeader.setTitle(R.string.pref_header_notifications);
-        getPreferenceScreen().addPreference(fakeHeader);
-        addPreferencesFromResource(R.xml.pref_notification);
+        twitchBotEnabledControl = (CheckBoxPreference)findPreference("twitch_enable");
+        initializeBooleanControl(twitchBotEnabledControl, PREFERENCE_KEY_TWITCH_ENABLED);
 
-        // Add 'data and sync' preferences, and a corresponding header.
-        fakeHeader = new PreferenceCategory(this);
-        fakeHeader.setTitle(R.string.pref_header_data_sync);
-        getPreferenceScreen().addPreference(fakeHeader);
-        addPreferencesFromResource(R.xml.pref_data_sync);
+        twitchUserControl = (EditTextPreference)findPreference("twitch_account");
+        initializeTextControl(twitchUserControl, PREFERENCE_KEY_TWITCH_ACCOUNT);
 
-        // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
-        // their values. When their values change, their summaries are updated
-        // to reflect the new value, per the Android Design guidelines.
-        bindPreferenceSummaryToValue(findPreference("example_text"));
-        bindPreferenceSummaryToValue(findPreference("example_list"));
-        bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
-        bindPreferenceSummaryToValue(findPreference("sync_frequency"));
-        */
+        twitchPasswordControl = (EditTextPreference)findPreference("twitch_password");
+        initializeTextControl(twitchPasswordControl, PREFERENCE_KEY_TWITCH_PASSWORD);
+
+        twitchChannelControl = (EditTextPreference)findPreference("twitch_channel");
+        initializeTextControl(twitchChannelControl, PREFERENCE_KEY_TWITCH_CHANNEL);
+
+        twitchRequestAllControl = (CheckBoxPreference)findPreference("twitch_request_all");
+        initializeBooleanControl(twitchRequestAllControl, PREFERENCE_KEY_TWITCH_REQUEST_ALL);
+
+        twitchRequestLimitControl = (EditTextPreference)findPreference("twitch_request_limit");
+        initializeNumericControl(twitchRequestLimitControl, PREFERENCE_KEY_TWITCH_REQUEST_LIMIT, 300);
+
+        playlistUrlControl = (EditTextPreference)findPreference("playlist_url");
+        initializeTextControl(playlistUrlControl, PREFERENCE_KEY_PLAYLIST_URL);
+
+        copyPlaylistControl = findPreference("copy_playlist");
+        copyPlaylistControl.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                copyPlaylist();
+                return true;
+            }
+        });
+    }
+
+    private void initializeTextControl(final EditTextPreference control, final String key) {
+        String value = loadStringPreference(key, "");
+        control.setDefaultValue(value);
+        control.setSummary(value);
+
+        control.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                saveStringPreference(key, newValue.toString());
+                control.setSummary(newValue.toString());
+                return true;
+            }
+        });
+    }
+
+    private void initializeNumericControl(final EditTextPreference control, final String key, int defaultValue) {
+        final Integer value = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE).getInt(key, defaultValue);
+        control.setDefaultValue(value);
+        control.setSummary(value.toString());
+
+        control.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                SharedPreferences sharedPref = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt(key, Integer.valueOf(newValue.toString()));
+                editor.apply();
+                control.setSummary(newValue.toString());
+                return true;
+            }
+        });
+    }
+
+    private void initializeBooleanControl(final CheckBoxPreference control, final String key) {
+        control.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                SharedPreferences sharedPref = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(key, (Boolean)newValue);
+                editor.apply();
+                return true;
+            }
+        });
     }
 
     /**
@@ -211,49 +285,6 @@ public class SettingsActivity extends PreferenceActivity {
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
-            /*
-            String stringValue = value.toString();
-
-            if (preference instanceof ListPreference) {
-                // For list preferences, look up the correct display value in
-                // the preference's 'entries' list.
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
-
-                // Set the summary to reflect the new value.
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
-
-            } else if (preference instanceof RingtonePreference) {
-                // For ringtone preferences, look up the correct display value
-                // using RingtoneManager.
-                if (TextUtils.isEmpty(stringValue)) {
-                    // Empty values correspond to 'silent' (no ringtone).
-                    preference.setSummary(R.string.pref_ringtone_silent);
-
-                } else {
-                    Ringtone ringtone = RingtoneManager.getRingtone(
-                            preference.getContext(), Uri.parse(stringValue));
-
-                    if (ringtone == null) {
-                        // Clear the summary if there was a lookup error.
-                        preference.setSummary(null);
-                    } else {
-                        // Set the summary to reflect the new ringtone display
-                        // name.
-                        String name = ringtone.getTitle(preference.getContext());
-                        preference.setSummary(name);
-                    }
-                }
-
-            } else {
-                // For all other preferences, set the summary to the value's
-                // simple string representation.
-                preference.setSummary(stringValue);
-            }
-            */
             return true;
         }
     };
@@ -361,6 +392,14 @@ public class SettingsActivity extends PreferenceActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        TwitchBot.reconfigure(getApplicationContext());
+        TwitchBot.getInstance(getApplicationContext()).setHandler(new Handler());
+    }
+
     private void saveStringPreference(String key, String value) {
         SharedPreferences sharedPref = getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -410,5 +449,19 @@ public class SettingsActivity extends PreferenceActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener).show();
+    }
+
+    private void copyPlaylist() {
+        boolean filtered = !getSharedPreferences(SettingsActivity.PREFERENCE_FILE, Context.MODE_PRIVATE).getBoolean(SettingsActivity.PREFERENCE_KEY_TWITCH_REQUEST_ALL, false);
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        for (Artist artist : MusicDatabase.getInstance(getApplicationContext()).getArtists(filtered)) {
+            stringBuilder.append(artist.getName());
+            stringBuilder.append("\n");
+        }
+
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("jukebox_playlist", stringBuilder.toString());
+        clipboard.setPrimaryClip(clip);
     }
 }

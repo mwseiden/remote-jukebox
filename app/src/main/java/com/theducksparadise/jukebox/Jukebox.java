@@ -24,6 +24,8 @@ public class Jukebox extends Activity {
 
     private static final int SLIDER_UPDATE_TIME = 200;
 
+    private static final int SPLASH_REQUEST_CODE = 555289;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,7 +91,7 @@ public class Jukebox extends Activity {
         handler.postDelayed(new SliderThread(handler), SLIDER_UPDATE_TIME);
 
         Intent intent = new Intent(getApplicationContext(), SplashActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, SPLASH_REQUEST_CODE);
 
     }
 
@@ -109,6 +111,15 @@ public class Jukebox extends Activity {
         menu.add(Menu.NONE, 0, 0, "Clear Queue");
         menu.add(Menu.NONE, 1, 1, "Settings");
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == SplashActivity.FINISH_MESSAGE) {
+            TwitchBot.getInstance(getApplicationContext()).setHandler(new Handler());
+        }
     }
 
     @Override

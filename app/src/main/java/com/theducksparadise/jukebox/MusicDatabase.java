@@ -136,8 +136,24 @@ public class MusicDatabase extends SQLiteOpenHelper {
         return filteredArtists == null ? artists : filteredArtists;
     }
 
+    public List<Artist> getArtists(boolean filtered) {
+        return (filteredArtists == null || !filtered) ? artists : filteredArtists;
+    }
+
     public Artist getArtist(String name) {
         return filteredArtistIndex == null ? artistIndex.get(name) : filteredArtistIndex.get(name);
+    }
+
+    public Artist getArtistCaseInsensitive(String name, boolean filter) {
+        return searchArtistInsensitive(name, (filteredArtistIndex == null || !filter) ? artistIndex : filteredArtistIndex);
+    }
+
+    private Artist searchArtistInsensitive(String name, Map<String, Artist> list) {
+        for (Map.Entry<String, Artist> entry : list.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(name)) return entry.getValue();
+        }
+
+        return null;
     }
 
     public LinkedHashMap<String, List<Song>> getTags() { return tags; }
@@ -205,6 +221,28 @@ public class MusicDatabase extends SQLiteOpenHelper {
         Random random = new Random();
         Object[] songs = getSongIndex().values().toArray();
         return songs.length > 0 ? (Song)songs[random.nextInt(songs.length)] : null;
+    }
+
+    public List<Song> findSong(String name, boolean filter) {
+        List<Song> songs = new ArrayList<>();
+
+        Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT id FROM " + SONG_TABLE_NAME + " WHERE LOWER(name) = ?",
+                new String[] { name.toLowerCase() }
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                Song song = getSongIndex(filter).get(cursor.getInt(0));
+
+                if (song != null) songs.add(song);
+
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+
+        return songs;
     }
 
     public void filter(String tagList, String exclusionList) {
@@ -283,7 +321,11 @@ public class MusicDatabase extends SQLiteOpenHelper {
     }
 
     private Map<Integer, Song> getSongIndex() {
-        return filteredSongIndex == null ? songIndex : filteredSongIndex;
+        return getSongIndex(true);
+    }
+
+    private Map<Integer, Song> getSongIndex(boolean filter) {
+        return (filteredSongIndex == null || !filter) ? songIndex : filteredSongIndex;
     }
 
     private void reloadDatabase() {
