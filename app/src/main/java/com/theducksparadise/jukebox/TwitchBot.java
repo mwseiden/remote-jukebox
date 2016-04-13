@@ -5,6 +5,8 @@ import android.os.Handler;
 
 import com.theducksparadise.jukebox.domain.Artist;
 import com.theducksparadise.jukebox.domain.Song;
+import com.theducksparadise.jukebox.talker.PirateTalker;
+import com.theducksparadise.jukebox.talker.Talker;
 
 import org.pircbotx.Configuration;
 import org.pircbotx.PircBotX;
@@ -54,6 +56,8 @@ public class TwitchBot extends ListenerAdapter {
     private String playlistMessage;
 
     private List<Song> previousRequests;
+
+    private Talker talker = new PirateTalker();
 
     public static TwitchBot getInstance(Context context) {
         if (instance == null) {
@@ -204,6 +208,8 @@ public class TwitchBot extends ListenerAdapter {
         } else if (message.equalsIgnoreCase("?help")) {
             cyclesWithoutTalking = 0;
             addHelpMessages();
+        } else if (message.toLowerCase().contains("@" + accountName.toLowerCase())) {
+            addMessage(talker.talk());
         } else if (fromModerator) {
             if (message.equalsIgnoreCase("?next")) {
                 onNext(event);
