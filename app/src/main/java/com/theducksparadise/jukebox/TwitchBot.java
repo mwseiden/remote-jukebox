@@ -118,7 +118,7 @@ public class TwitchBot extends ListenerAdapter {
                 // Your twitch.tv username
                 .setName(account)
                 // Your oauth password from http://twitchapps.com/tmi
-                .setServerPassword("oauth:" + password)
+                .setServerPassword((password.toLowerCase().startsWith("oauth:") ? "" : "oauth:") + password)
                 // Some twitch channel
                 .addAutoJoinChannel("#" + channel)
                 .addListener(this)
