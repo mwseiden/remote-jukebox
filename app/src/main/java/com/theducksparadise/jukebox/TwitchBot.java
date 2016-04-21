@@ -280,7 +280,7 @@ public class TwitchBot extends ListenerAdapter {
 
                     if (songs == null || songs.size() == 0) {
                         for (Map.Entry<String, List<Song>> entry : MusicDatabase.getInstance(context).getTags().entrySet()) {
-                            if (entry.getKey().toLowerCase().equals(request.toLowerCase())) {
+                            if (entry.getKey().equalsIgnoreCase(request)) {
                                 songs = (ArrayList<Song>) entry.getValue();
                                 break;
                             }
@@ -310,7 +310,7 @@ public class TwitchBot extends ListenerAdapter {
             ArrayList<Song> songs = new ArrayList<>();
 
             for (Song song : artist.getSongsForQueue()) {
-                if (song.getName().toLowerCase().equals(requests[0].trim())) {
+                if (song.getName().equalsIgnoreCase(requests[0].trim())) {
                     songs.add(song);
                 }
             }

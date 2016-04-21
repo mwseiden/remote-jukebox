@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class PirateTalker implements Talker {
 
-    private static String[] verbs = new String[] {
+    private static final String[] verbs = new String[] {
             "abandon",
             "adventure",
             "assault",
@@ -51,7 +51,7 @@ public class PirateTalker implements Talker {
 
     };
 
-    private static String[] nouns = new String[] {
+    private static final String[] nouns = new String[] {
             "adventure",
             "anchor",
             "armada",
@@ -210,7 +210,7 @@ public class PirateTalker implements Talker {
             "yellow fever"
     };
 
-    private static String[] adjectives = new String[] {
+    private static final String[] adjectives = new String[] {
             "asea",
             "ashore",
             "bad",
@@ -247,7 +247,7 @@ public class PirateTalker implements Talker {
             "violent"
     };
 
-    private static String[] exclamations = new String[] {
+    private static final String[] exclamations = new String[] {
             "ahoy",
             "arrrrr",
             "aye-aye",
@@ -266,7 +266,7 @@ public class PirateTalker implements Talker {
     // %v : verb
     // %a : adjective
     // %d : descriptive
-    private static String[] formats = new String[] {
+    private static final String[] formats = new String[] {
             "%v the %n ye %d",
             "%v the %n and %v the %n! We be lookin' fer %d",
             "%d off the starboard bow",
