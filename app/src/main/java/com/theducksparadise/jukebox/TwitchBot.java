@@ -2,6 +2,7 @@ package com.theducksparadise.jukebox;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import com.theducksparadise.jukebox.domain.Artist;
 import com.theducksparadise.jukebox.domain.Song;
@@ -178,6 +179,8 @@ public class TwitchBot extends ListenerAdapter {
     }
 
     public static void reconfigure(Context context) {
+        Log.i("TwitchBot", "Reconfigure Twitch Bot");
+
         synchronized (TwitchBot.class) {
             if (instance != null && instance.bot != null) {
                 if (instance.handler != null) instance.handler.removeCallbacks(instance.runnable);
@@ -356,8 +359,12 @@ public class TwitchBot extends ListenerAdapter {
     @Override
     public void onConnect(ConnectEvent event) throws Exception {
         if (!silentConnect) {
+            Log.i("TwitchBot", "Connecting, Adding Welcome Message");
+
             addMessage("Ahoy Matey! " + accountName + " reporting for sea shanty duty!");
             addHelpMessages();
+        } else {
+            Log.i("TwitchBot", "Connecting Silently");
         }
 
         silentConnect = false;

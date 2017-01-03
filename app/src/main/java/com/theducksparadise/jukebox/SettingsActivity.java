@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.text.format.Formatter;
 
 import com.theducksparadise.jukebox.domain.Artist;
 
@@ -85,6 +87,8 @@ public class SettingsActivity extends PreferenceActivity {
     private PreferenceScreen blackListPickerControl;
 
     private CheckBoxPreference webServerEnabledControl;
+
+    private Preference ipAddressControl;
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -195,6 +199,10 @@ public class SettingsActivity extends PreferenceActivity {
 
         webServerEnabledControl = (CheckBoxPreference)findPreference("web_server_enable");
         initializeBooleanControl(webServerEnabledControl, PREFERENCE_KEY_WEB_SERVER_ENABLED);
+
+        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+        ipAddressControl = findPreference("current_ip");
+        ipAddressControl.setSummary(Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress()));
     }
 
     private void initializeTextControl(final EditTextPreference control, final String key) {

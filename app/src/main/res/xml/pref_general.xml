@@ -89,6 +89,10 @@
         />
 
     <Preference
+        android:key="current_ip"
+        android:title="Current IP" />
+
+    <Preference
         android:key="refresh_db"
         android:summary="Synchronizes the database with the file system"
         android:title="Refresh database"
