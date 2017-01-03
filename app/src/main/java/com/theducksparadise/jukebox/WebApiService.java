@@ -1,6 +1,7 @@
 package com.theducksparadise.jukebox;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
@@ -15,13 +16,18 @@ public class WebApiService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        webApiServer = null;
+
         try {
-            webApiServer = new WebApiServer(getAssets());
+            if (getApplicationContext().getSharedPreferences(SettingsActivity.PREFERENCE_FILE, Context.MODE_PRIVATE).getBoolean(SettingsActivity.PREFERENCE_KEY_WEB_SERVER_ENABLED, false)) {
+                webApiServer = new WebApiServer(getAssets());
+                Log.i("WebApiServer", "Started Web Service Listening");
+            } else {
+                Log.i("WebApiServer", "Started Web Service Ignoring");
+            }
         } catch (IOException e) {
             webApiServer = null;
         }
-
-        Log.i("WebApiServer", "Started Web Service");
 
         return START_STICKY;
     }

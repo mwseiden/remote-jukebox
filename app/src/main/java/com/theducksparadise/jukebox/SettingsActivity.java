@@ -404,6 +404,8 @@ public class SettingsActivity extends PreferenceActivity {
 
         TwitchBot.reconfigure(getApplicationContext());
         TwitchBot.getInstance(getApplicationContext()).setHandler(new Handler());
+        stopService(new Intent(getBaseContext(), WebApiService.class));
+        startService(new Intent(getBaseContext(), WebApiService.class));
     }
 
     private void saveStringPreference(String key, String value) {
