@@ -46,6 +46,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String PREFERENCE_KEY_TWITCH_REQUEST_LIMIT = "twitch_request_limit";
     public static final String PREFERENCE_KEY_TWITCH_REQUEST_ALL = "twitch_request_all";
     public static final String PREFERENCE_KEY_PLAYLIST_URL = "playlist_url";
+    public static final String PREFERENCE_KEY_WEB_SERVER_ENABLED = "web_server_enabled";
 
     /**
      * Determines whether to always show the simplified settings UI, where
@@ -82,6 +83,8 @@ public class SettingsActivity extends PreferenceActivity {
     private PreferenceScreen whiteListPickerControl;
 
     private PreferenceScreen blackListPickerControl;
+
+    private CheckBoxPreference webServerEnabledControl;
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -189,6 +192,9 @@ public class SettingsActivity extends PreferenceActivity {
                 return true;
             }
         });
+
+        webServerEnabledControl = (CheckBoxPreference)findPreference("web_server_enable");
+        initializeBooleanControl(webServerEnabledControl, PREFERENCE_KEY_WEB_SERVER_ENABLED);
     }
 
     private void initializeTextControl(final EditTextPreference control, final String key) {

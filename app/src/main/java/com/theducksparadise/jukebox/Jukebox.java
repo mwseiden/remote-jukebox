@@ -51,6 +51,13 @@ public class Jukebox extends Activity {
                 startActivity(intent);
             }
         });
+        libraryButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                openOptionsMenu();
+                return true;
+            }
+        });
 
         ImageButton nextButton = (ImageButton)findViewById(R.id.nextButton);
         nextButton.setOnClickListener(new View.OnClickListener() {
@@ -119,6 +126,8 @@ public class Jukebox extends Activity {
 
         if (resultCode == SplashActivity.FINISH_MESSAGE) {
             TwitchBot.getInstance(getApplicationContext()).setHandler(new Handler());
+            //stopService(new Intent(getBaseContext(), WebApiService.class));
+            startService(new Intent(getBaseContext(), WebApiService.class));
         }
     }
 
