@@ -82,6 +82,16 @@
         android:title="URL of Playlist"
         />
 
+    <CheckBoxPreference
+        android:key="web_server_enable"
+        android:summary="Enable Web Server"
+        android:title="Web Server Enabled"
+        />
+
+    <Preference
+        android:key="current_ip"
+        android:title="Current IP" />
+
     <Preference
         android:key="refresh_db"
         android:summary="Synchronizes the database with the file system"

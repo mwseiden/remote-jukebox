@@ -2,6 +2,7 @@ package com.theducksparadise.jukebox;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import com.theducksparadise.jukebox.domain.Artist;
 import com.theducksparadise.jukebox.domain.Song;
@@ -59,11 +60,13 @@ public class TwitchBot extends ListenerAdapter {
 
     private Talker talker = new PirateTalker();
 
+    private boolean silentConnect = false;
+
     public static TwitchBot getInstance(Context context) {
         if (instance == null) {
             synchronized (TwitchBot.class) {
                 if (instance == null) {
-                    instance = new TwitchBot(context);
+                    instance = new TwitchBot(context, false);
                 }
             }
         }
@@ -71,12 +74,14 @@ public class TwitchBot extends ListenerAdapter {
         return instance;
     }
 
-    private TwitchBot(Context context) {
+    private TwitchBot(Context context, boolean silentConnect) {
         if (instance != null && instance.bot != null) {
             if (instance.handler != null) instance.handler.removeCallbacks(instance.runnable);
             instance.bot.stopBotReconnect();
             instance.bot.close();
         }
+
+        this.silentConnect = silentConnect;
 
         userRequests = new HashMap<>();
         previousRequests = new ArrayList<>();
@@ -174,13 +179,15 @@ public class TwitchBot extends ListenerAdapter {
     }
 
     public static void reconfigure(Context context) {
+        Log.i("TwitchBot", "Reconfigure Twitch Bot");
+
         synchronized (TwitchBot.class) {
             if (instance != null && instance.bot != null) {
                 if (instance.handler != null) instance.handler.removeCallbacks(instance.runnable);
                 instance.bot.stopBotReconnect();
                 instance.bot.close();
             }
-            instance = new TwitchBot(context);
+            instance = new TwitchBot(context, true);
         }
     }
 
@@ -199,7 +206,8 @@ public class TwitchBot extends ListenerAdapter {
                 event.getChannel().isOp(event.getUser());
 
         String message = event.getMessage();
-        if (message.toLowerCase().startsWith("?request ")) {
+        if (message.toLowerCase().startsWith("?request ") ||
+                message.toLowerCase().startsWith("!request ")) {
             onRequest(event, event.getMessage().substring(9).trim());
         } else if (message.equalsIgnoreCase("?song")) {
             onSong();
@@ -350,8 +358,16 @@ public class TwitchBot extends ListenerAdapter {
 
     @Override
     public void onConnect(ConnectEvent event) throws Exception {
-        addMessage("Ahoy Matey! " + accountName + " reporting for sea shanty duty!");
-        addHelpMessages();
+        if (!silentConnect) {
+            Log.i("TwitchBot", "Connecting, Adding Welcome Message");
+
+            addMessage("Ahoy Matey! " + accountName + " reporting for sea shanty duty!");
+            addHelpMessages();
+        } else {
+            Log.i("TwitchBot", "Connecting Silently");
+        }
+
+        silentConnect = false;
     }
 
     private boolean isIneligible(Song song) {

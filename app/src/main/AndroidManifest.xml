@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.theducksparadise.jukebox" >
+    package="com.theducksparadise.jukebox">
 
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -10,27 +11,29 @@
         android:allowBackup="true"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
             android:name=".Jukebox"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/FullscreenTheme" >
+            android:theme="@style/FullscreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity android:name=".DirectoryPicker"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".DirectoryPicker"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="your.action.string" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -39,33 +42,36 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_wait"
             android:screenOrientation="portrait"
-            android:theme="@style/FullscreenTheme" >
-        </activity>
+            android:theme="@style/FullscreenTheme"></activity>
         <activity
             android:name=".MusicListActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_music_list"
-            android:theme="@style/FullscreenTheme"
-            android:screenOrientation="portrait">
-        </activity>
+            android:screenOrientation="portrait"
+            android:theme="@style/FullscreenTheme"></activity>
         <activity
             android:name=".SplashActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_music_list"
-            android:theme="@style/FullscreenTheme"
-            android:screenOrientation="portrait">
-        </activity>
+            android:screenOrientation="portrait"
+            android:theme="@style/FullscreenTheme"></activity>
         <activity
             android:name=".TagListActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_select_tag"
-            android:theme="@style/FullscreenTheme"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/FullscreenTheme">
             <intent-filter>
                 <action android:name="jukebox.pick.tags" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".WebApiService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

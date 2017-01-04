@@ -7,12 +7,11 @@ I am using it by hanging it on the wall and connecting to my stereo via bluetoot
 
 It also includes Twitch bot capabilities.
 
-It requires an Android device with a settings button and a back button.
-
 ## Configuration
 
-The configuration is accessed by hitting the menu button and selecting `Settings`. When
-done, hit the back button to save and return to the main screen.
+The configuration is accessed by hitting the menu button and selecting `Settings`. On
+newer Android devices without a menu button, press and hold the Music button to open
+the system menu. When done, hit the back button to save and return to the main screen.
 
 ### Basic Configuration
 
@@ -85,6 +84,14 @@ posted on the website of your choice, such as PasteBin.
 The URL of the list of bands. This is mentioned at intervals by the bot or via the ?help
 command. If blank then this message will be skipped.
 
+### Web Server
+
+There is an optional web server that provides remote control functionality.
+
+#### Enable Web Server
+
+Turns the web server on or off.
+
 ## Using The Jukebox
 
 ### Pause/Play
@@ -126,6 +133,8 @@ You can clear the queue by hitting the menu button and selecting `Clear Queue`.
 ?request [SONG] ?by [BAND]
 ?song
 ?album
+
+!request is an acceptable synonym for ?request
 
 ### Moderator Commands
 

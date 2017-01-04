@@ -30,4 +30,5 @@ dependencies {
     compile 'com.android.support:support-v4:22.0.0'
     compile 'org.pircbotx:pircbotx:2.1'
     compile 'org.slf4j:slf4j-android:1.7.20'
+    compile 'com.nanohttpd:nanohttpd:2.2.0'
 }

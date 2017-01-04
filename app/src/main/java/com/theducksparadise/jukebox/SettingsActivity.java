@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.text.format.Formatter;
 
 import com.theducksparadise.jukebox.domain.Artist;
 
@@ -46,6 +48,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String PREFERENCE_KEY_TWITCH_REQUEST_LIMIT = "twitch_request_limit";
     public static final String PREFERENCE_KEY_TWITCH_REQUEST_ALL = "twitch_request_all";
     public static final String PREFERENCE_KEY_PLAYLIST_URL = "playlist_url";
+    public static final String PREFERENCE_KEY_WEB_SERVER_ENABLED = "web_server_enabled";
 
     /**
      * Determines whether to always show the simplified settings UI, where
@@ -82,6 +85,10 @@ public class SettingsActivity extends PreferenceActivity {
     private PreferenceScreen whiteListPickerControl;
 
     private PreferenceScreen blackListPickerControl;
+
+    private CheckBoxPreference webServerEnabledControl;
+
+    private Preference ipAddressControl;
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -189,6 +196,13 @@ public class SettingsActivity extends PreferenceActivity {
                 return true;
             }
         });
+
+        webServerEnabledControl = (CheckBoxPreference)findPreference("web_server_enable");
+        initializeBooleanControl(webServerEnabledControl, PREFERENCE_KEY_WEB_SERVER_ENABLED);
+
+        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+        ipAddressControl = findPreference("current_ip");
+        ipAddressControl.setSummary(Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress()));
     }
 
     private void initializeTextControl(final EditTextPreference control, final String key) {
@@ -398,6 +412,8 @@ public class SettingsActivity extends PreferenceActivity {
 
         TwitchBot.reconfigure(getApplicationContext());
         TwitchBot.getInstance(getApplicationContext()).setHandler(new Handler());
+        stopService(new Intent(getBaseContext(), WebApiService.class));
+        startService(new Intent(getBaseContext(), WebApiService.class));
     }
 
     private void saveStringPreference(String key, String value) {
